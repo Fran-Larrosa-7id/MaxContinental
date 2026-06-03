@@ -1,0 +1,86 @@
+<section class="max-h-[88dvh] overflow-hidden rounded-lg bg-white text-[#082653]">
+  <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+    <div>
+      <h2 class="text-2xl font-black">Crear Nueva Muestra</h2>
+      <p class="mt-1 text-sm text-slate-500">Seleccione insumos y agregue cualquier detalle util.</p>
+    </div>
+    <button
+      type="button"
+      class="flex size-9 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+      aria-label="Cerrar"
+      (click)="close()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="mc-scrollbar max-h-[calc(88dvh-148px)] overflow-auto px-5 py-4">
+    <label class="mb-2 block text-sm font-bold" for="sampleSearch">Cliente, ciudad o insumo</label>
+    <input
+      id="sampleSearch"
+      class="mb-4 h-11 w-full rounded-md border border-slate-200 px-3 outline-none focus:border-[#3e5f8b]"
+      placeholder="Buscar cliente, ciudad o insumo..."
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+    />
+
+    <div class="mb-3 flex items-center justify-between">
+      <h3 class="text-sm font-black">Insumos</h3>
+      <span class="rounded-full bg-[#edf6ff] px-3 py-1 text-xs font-bold text-[#203f75]">
+        {{ selectedCount() }} seleccionados
+      </span>
+    </div>
+
+    <div class="grid max-h-60 gap-2 overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-3 sm:grid-cols-2">
+      @for (item of filteredSupplies(); track item) {
+        <label
+          class="flex min-h-12 cursor-pointer items-start gap-3 rounded-md bg-white px-3 py-2 text-sm shadow-sm transition hover:bg-[#edf6ff]"
+        >
+          <input
+            type="checkbox"
+            class="mt-1 size-4 accent-[#d61aa0]"
+            [checked]="selectedSupplies().includes(item)"
+            (change)="toggleSupply(item)"
+          />
+          <span>{{ item }}</span>
+        </label>
+      }
+    </div>
+
+    <label class="mb-2 mt-4 block text-sm font-bold" for="otherSupplies">Otros Insumos (No listados)</label>
+    <input
+      id="otherSupplies"
+      class="h-11 w-full rounded-md border border-slate-200 px-3 outline-none focus:border-[#3e5f8b]"
+      placeholder="Escriba otros insumos aqui..."
+      [ngModel]="otherSupplies()"
+      (ngModelChange)="otherSupplies.set($event)"
+    />
+
+    <label class="mb-2 mt-4 block text-sm font-bold" for="observations">Observaciones (Opcional)</label>
+    <textarea
+      id="observations"
+      class="min-h-24 w-full resize-y rounded-md border border-slate-200 p-3 outline-none focus:border-[#3e5f8b]"
+      placeholder="Algun detalle adicional sobre la muestra..."
+      [ngModel]="observations()"
+      (ngModelChange)="observations.set($event)"
+    ></textarea>
+  </div>
+
+  <footer class="flex flex-col-reverse gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end">
+    <button
+      type="button"
+      class="h-10 rounded-md bg-slate-100 px-5 font-medium text-slate-700 transition hover:bg-slate-200"
+      (click)="close()"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="h-10 rounded-md bg-[#45658f] px-5 font-bold text-white transition hover:bg-[#31547f] disabled:cursor-not-allowed disabled:opacity-60"
+      [disabled]="selectedCount() === 0 && !otherSupplies().trim()"
+      (click)="close()"
+    >
+      Crear Muestra(s)
+    </button>
+  </footer>
+</section>

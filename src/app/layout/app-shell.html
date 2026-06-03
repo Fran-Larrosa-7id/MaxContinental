@@ -1,0 +1,91 @@
+<div class="min-h-dvh bg-[#c9d6e4] text-[#082653]">
+  <aside class="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col bg-[#192f56] text-white shadow-xl md:flex">
+    <a
+      routerLink="/app/muestras"
+      class="flex h-[72px] items-center gap-3 border-b border-white/10 bg-[#203f75] px-3"
+    >
+      <span
+        class="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white text-[#3e5f8b]"
+      >
+        <mat-icon>terrain</mat-icon>
+      </span>
+      <span class="text-lg font-black leading-tight">MAX CONTINENTAL</span>
+    </a>
+
+    <nav class="mt-4 flex-1">
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-[#496b95]"
+          class="flex h-[52px] items-center gap-4 px-5 text-base font-semibold transition hover:bg-white/10"
+        >
+          <mat-icon class="!text-[21px]">{{ item.icon }}</mat-icon>
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+
+    <section class="border-t border-white/10 bg-[#233e79] p-3">
+      <div class="mb-3 flex items-center gap-3">
+        <span class="flex size-9 items-center justify-center rounded-full bg-[#a7cbe7] font-black text-[#14315d]">
+          A
+        </span>
+        <span>
+          <strong class="block text-sm">Arnaldo Parra</strong>
+          <small class="block text-[#a7d0ff]">Jefe de ventas</small>
+        </span>
+      </div>
+      <button
+        type="button"
+        class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#e62629] px-3 text-sm font-bold text-white transition hover:bg-[#c91f23]"
+        (click)="logout()"
+      >
+        <mat-icon class="!text-[18px]">logout</mat-icon>
+        Cerrar Sesion
+      </button>
+    </section>
+  </aside>
+
+  <div class="md:pl-[248px]">
+    <header
+      class="sticky top-0 z-20 flex h-[66px] items-center justify-between bg-[#192f56] px-4 text-white shadow-lg shadow-slate-900/20 sm:px-7"
+    >
+      <div class="flex items-center gap-3 md:hidden">
+        <span class="flex size-9 items-center justify-center rounded-full bg-white text-[#3e5f8b]">
+          <mat-icon>terrain</mat-icon>
+        </span>
+        <span class="text-sm font-black leading-tight">MAX CONTINENTAL</span>
+      </div>
+
+      <h1 class="hidden text-xl font-black uppercase tracking-[0.22em] text-[#afd1e4] md:block">
+        {{ pageTitle() }}
+      </h1>
+      <h1 class="text-base font-black uppercase tracking-[0.14em] text-[#afd1e4] md:hidden">
+        {{ pageTitle() }}
+      </h1>
+
+      <button
+        type="button"
+        class="flex size-10 items-center justify-center rounded-md text-slate-300 transition hover:bg-white/10 hover:text-white"
+        aria-label="Notificaciones"
+      >
+        <mat-icon>notifications_none</mat-icon>
+      </button>
+    </header>
+
+    <nav class="sticky top-[66px] z-10 grid grid-cols-2 bg-[#192f56] text-white md:hidden">
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-[#496b95]"
+          class="flex h-12 items-center justify-center gap-2 text-sm font-semibold"
+        >
+          <mat-icon class="!text-[19px]">{{ item.icon }}</mat-icon>
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+
+    <router-outlet />
+  </div>
+</div>

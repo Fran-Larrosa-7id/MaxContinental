@@ -1,0 +1,78 @@
+<main class="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-8" data-aos="fade-up">
+  <section class="mb-16">
+    <h2 class="mb-5 text-2xl font-black">Analisis de Muestras</h2>
+    <div class="grid gap-4 lg:grid-cols-3">
+      @for (metric of metrics; track metric.label) {
+        <article class="rounded-lg border-l-4 bg-white p-5 shadow-sm" [style.borderLeftColor]="metric.color">
+          <p class="text-sm font-medium text-slate-500">{{ metric.label }}</p>
+          <strong class="mt-1 block text-3xl font-black" [style.color]="metric.valueColor">
+            {{ metric.value }}
+          </strong>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="mb-4 flex items-center gap-2 text-3xl font-black">
+      <mat-icon>monetization_on</mat-icon>
+      Metricas de Comparativas de Precios
+    </h2>
+    <p class="mb-5 text-slate-500">Visualizando el rendimiento de todos los vendedores en comparativas.</p>
+    <div
+      class="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 shadow-sm"
+    >
+      No hay datos de comparativas disponibles para su usuario.
+    </div>
+  </section>
+
+  <section class="mb-8">
+    <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="text-2xl font-black">Registro de Gestiones y Actividad</h2>
+      <div class="grid grid-cols-2 rounded-lg bg-slate-100 p-1 sm:grid-cols-4">
+        @for (range of ranges; track range) {
+          <button
+            type="button"
+            class="h-9 rounded-md px-3 text-sm font-medium transition"
+            [class.bg-white]="selectedRange() === range"
+            [class.text-[#082653]]="selectedRange() === range"
+            [class.text-slate-600]="selectedRange() !== range"
+            [class.shadow-sm]="selectedRange() === range"
+            (click)="selectedRange.set(range)"
+          >
+            {{ range }}
+          </button>
+        }
+      </div>
+    </div>
+    <div
+      class="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 shadow-sm"
+    >
+      No hay datos de gestion disponibles.
+    </div>
+  </section>
+
+  <section class="border-t border-white/70 pt-7">
+    <h2 class="mb-5 flex items-center gap-2 text-2xl font-black">
+      <mat-icon>file_upload</mat-icon>
+      Carga de Reportes de Ventas (IA)
+    </h2>
+    <div class="rounded-lg border border-dashed border-[#98c8fb] bg-[#edf6ff] p-7 text-center">
+      <label
+        class="inline-flex h-9 cursor-pointer items-center rounded-md border border-slate-400 bg-white px-3 text-sm font-medium text-[#082653] transition hover:bg-slate-50"
+      >
+        Elegir archivos
+        <input type="file" class="sr-only" multiple (change)="setReportFiles($event)" />
+      </label>
+      <span class="ml-2 inline-block text-sm text-slate-600">{{ reportFilesLabel() }}</span>
+      <p class="mt-5 text-sm text-slate-500">Suba imagenes de los reportes para extraer datos automaticamente.</p>
+      <button
+        type="button"
+        class="mt-5 h-10 rounded-md bg-slate-400 px-7 font-bold text-white transition enabled:hover:bg-[#3e5f8b] disabled:cursor-not-allowed disabled:opacity-70"
+        [disabled]="reportFilesLabel() === 'No se eligio ningun archivo'"
+      >
+        Procesar Imagenes
+      </button>
+    </div>
+  </section>
+</main>

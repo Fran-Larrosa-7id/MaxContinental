@@ -1,0 +1,45 @@
+<section class="rounded-lg bg-white text-[#082653]">
+  <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+    <div>
+      <h2 class="text-2xl font-black">Cargar Planilla de Aprobacion</h2>
+      <p class="mt-1 text-sm text-slate-500">Suba una foto o escaneo de la planilla.</p>
+    </div>
+    <button
+      type="button"
+      class="flex size-9 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+      aria-label="Cerrar"
+      (click)="close()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="px-6 py-6">
+    <p class="mb-3 font-medium">1. Subir Imagen de Planilla (Foto/Escaneo)</p>
+    <label
+      class="inline-flex h-10 cursor-pointer items-center rounded-md bg-[#eef4fb] px-4 font-bold text-[#1557d5] transition hover:bg-[#e0ecfb]"
+    >
+      Elegir archivo
+      <input type="file" class="sr-only" accept="image/*,.pdf" (change)="setFile($event)" />
+    </label>
+    <span class="ml-3 inline-block text-sm text-slate-500">{{ fileName() }}</span>
+  </div>
+
+  <footer class="flex flex-col-reverse gap-3 px-6 pb-6 sm:flex-row sm:justify-end">
+    <button
+      type="button"
+      class="h-10 rounded-md bg-slate-100 px-5 font-medium text-slate-700 transition hover:bg-slate-200"
+      (click)="close()"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="h-10 rounded-md bg-[#45658f] px-5 font-bold text-white transition hover:bg-[#31547f] disabled:cursor-not-allowed disabled:opacity-55"
+      [disabled]="!selectedFile()"
+      (click)="close()"
+    >
+      Subir y Guardar
+    </button>
+  </footer>
+</section>

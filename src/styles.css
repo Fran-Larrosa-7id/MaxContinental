@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+@import 'aos/dist/aos.css';
+
+:root {
+  --mc-ink: #072653;
+  --mc-navy: #172f56;
+  --mc-navy-2: #203f75;
+  --mc-blue-soft: #cad6e4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  background: var(--mc-blue-soft);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.mc-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #7c8797 transparent;
+}
+
+.mc-scrollbar::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.mc-scrollbar::-webkit-scrollbar-thumb {
+  background: #7c8797;
+  border-radius: 999px;
+}

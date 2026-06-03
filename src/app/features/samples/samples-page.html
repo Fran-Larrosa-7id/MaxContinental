@@ -1,0 +1,155 @@
+<main class="mx-auto w-full max-w-[1320px] px-4 py-6 sm:px-8" data-aos="fade-up">
+  <section class="flex flex-col gap-4 border-b border-white/60 pb-4 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex flex-wrap gap-3">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          class="flex h-11 items-center gap-2 rounded-md px-4 text-sm font-bold shadow-sm transition sm:text-base"
+          [class.bg-[#102a57]]="selectedTab() === tab.id"
+          [class.text-white]="selectedTab() === tab.id"
+          [class.bg-white]="selectedTab() !== tab.id"
+          [class.text-slate-700]="selectedTab() !== tab.id"
+          (click)="selectedTab.set(tab.id)"
+        >
+          <mat-icon class="!text-[18px]">{{ tab.icon }}</mat-icon>
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    @if (selectedTab() === 'active') {
+      <button
+        type="button"
+        class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#e62629] px-4 font-bold text-white shadow-md transition hover:bg-[#c91f23] sm:w-auto"
+        (click)="openNewSample()"
+      >
+        <mat-icon class="!text-[20px]">add</mat-icon>
+        Nueva Muestra
+      </button>
+    }
+
+    @if (selectedTab() === 'approvals') {
+      <button
+        type="button"
+        class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#16a34a] px-4 font-bold text-white shadow-md transition hover:bg-[#13833d] sm:w-auto"
+        (click)="openApprovalUpload()"
+      >
+        <mat-icon class="!text-[19px]">upload</mat-icon>
+        Cargar Planilla
+      </button>
+    }
+  </section>
+
+  @switch (selectedTab()) {
+    @case ('active') {
+      <section class="pt-6">
+        <h2 class="mb-5 text-2xl font-black">Muestras Activas</h2>
+        <div class="mb-6 grid gap-3 rounded-lg bg-white p-4 shadow-sm lg:grid-cols-[1fr_220px]">
+          <input
+            class="h-10 rounded-md border border-slate-100 px-3 text-base outline-none focus:border-[#3e5f8b]"
+            placeholder="Buscar por insumo, cliente o ciudad..."
+          />
+          <select class="h-10 rounded-md border border-slate-100 px-3 outline-none focus:border-[#3e5f8b]">
+            @for (status of statuses; track status) {
+              <option>{{ status }}</option>
+            }
+          </select>
+        </div>
+        <article class="overflow-hidden rounded-lg bg-white shadow-sm">
+          <div
+            class="hidden grid-cols-[56px_1fr_1fr_1.2fr_1fr_1.2fr_84px] border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 md:grid"
+          >
+            <span><input type="checkbox" aria-label="Seleccionar todas" /></span>
+            <span>Cliente</span>
+            <span>Insumo</span>
+            <span>Vendedor / Coord.</span>
+            <span>Estado</span>
+            <span>Proximo Seguimiento</span>
+            <span>Accion</span>
+          </div>
+          <div class="flex min-h-22 items-center justify-center px-4 py-9 text-center text-slate-500">
+            No se encontraron muestras activas con los filtros actuales.
+          </div>
+        </article>
+      </section>
+    }
+
+    @case ('resolved') {
+      <section class="pt-6">
+        <h2 class="mb-5 text-2xl font-black">Muestras Resueltas</h2>
+        <div class="mb-6 grid gap-3 rounded-lg bg-white p-4 shadow-sm xl:grid-cols-[1fr_auto_220px]">
+          <input
+            class="h-10 rounded-md border border-slate-100 px-3 text-base outline-none focus:border-[#3e5f8b]"
+            placeholder="Buscar por insumo, cliente o ciudad..."
+          />
+          <div class="grid grid-cols-2 rounded-md bg-slate-100 p-1">
+            @for (filter of resolutionFilters; track filter.id) {
+              <button
+                type="button"
+                class="h-8 rounded px-3 text-xs font-bold transition"
+                [class.bg-[#16a34a]]="resolutionFilter() === filter.id && filter.id === 'approved'"
+                [class.bg-[#e62629]]="resolutionFilter() === filter.id && filter.id === 'rejected'"
+                [class.text-white]="resolutionFilter() === filter.id"
+                [class.text-slate-500]="resolutionFilter() !== filter.id"
+                (click)="resolutionFilter.set(filter.id)"
+              >
+                {{ filter.label }}
+              </button>
+            }
+          </div>
+          <select
+            class="h-10 rounded-md border border-slate-100 px-3 outline-none focus:border-[#3e5f8b]"
+            [value]="statusFilter()"
+            (change)="statusFilter.set($any($event.target).value)"
+          >
+            @for (status of statuses; track status) {
+              <option>{{ status }}</option>
+            }
+          </select>
+        </div>
+        <article class="overflow-hidden rounded-lg bg-white shadow-sm">
+          <div
+            class="hidden grid-cols-[1fr_1fr_1fr_1fr_1.2fr_80px] border-b border-slate-200 bg-slate-50 px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 md:grid"
+          >
+            <span>Cliente</span>
+            <span>Insumo</span>
+            <span>Vendedor</span>
+            <span>Estado Final</span>
+            <span>Fecha Actualizacion</span>
+            <span>Accion</span>
+          </div>
+          <div class="flex min-h-22 items-center justify-center px-4 py-9 text-center text-slate-500">
+            {{ emptyMessage() }}
+          </div>
+        </article>
+      </section>
+    }
+
+    @case ('approvals') {
+      <section class="pt-6">
+        <h2 class="mb-5 text-2xl font-black">Planillas Cargadas</h2>
+        <button
+          type="button"
+          class="flex min-h-52 w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm transition hover:border-[#3e5f8b] hover:bg-slate-50"
+          (click)="openApprovalUpload()"
+        >
+          <mat-icon class="!size-12 !text-5xl text-slate-300">verified</mat-icon>
+          <span class="text-slate-500">No hay planillas de aprobacion cargadas.</span>
+          <strong class="text-[#203f75]">Cargar la primera</strong>
+        </button>
+      </section>
+    }
+  }
+</main>
+
+@if (isNewSampleOpen()) {
+  <div class="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
+    <app-new-sample-dialog class="w-full max-w-xl" (closed)="closeDialogs()" (click)="$event.stopPropagation()" />
+  </div>
+}
+
+@if (isApprovalUploadOpen()) {
+  <div class="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
+    <app-upload-approval-dialog class="w-full max-w-lg" (closed)="closeDialogs()" (click)="$event.stopPropagation()" />
+  </div>
+}
