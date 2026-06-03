@@ -1,6 +1,7 @@
-import { Component, computed, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { CreateSamplePayload, MockClient, MockSupply, MockUser } from '../../features/samples/samples.types';
 
 @Component({
   selector: 'app-new-sample-dialog',
@@ -8,41 +9,56 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './new-sample-dialog.html'
 })
 export class NewSampleDialog {
+  readonly clients = input.required<MockClient[]>();
+  readonly supplies = input.required<MockSupply[]>();
+  readonly sellers = input.required<MockUser[]>();
   readonly closed = output<void>();
+  readonly created = output<CreateSamplePayload>();
+
   readonly search = signal('');
-  readonly selectedSupplies = signal<string[]>(['Guias con regulador']);
-  readonly otherSupplies = signal('');
+  readonly selectedClientId = signal('');
+  readonly selectedSellerId = signal('');
+  readonly selectedSupplyIds = signal<string[]>([]);
+  readonly otherSupply = signal('');
   readonly observations = signal('');
 
-  readonly supplies = [
-    'Guias V 14 Continental',
-    'Guias con regulador',
-    'Guias con medidor volumetrico',
-    'Llave de 3 vias',
-    'Llave de 3 vias con prolong',
-    'Nylons',
-    'Polyglicolic',
-    'Tiras reactivas',
-    'Transductores de presion',
-    'Cannister bolsas',
-    'Set de drenaje',
-    'Llave doble paso'
-  ];
-
-  readonly selectedCount = computed(() => this.selectedSupplies().length);
+  readonly selectedCount = computed(() => this.selectedSupplyIds().length);
   readonly filteredSupplies = computed(() => {
     const term = this.search().trim().toLowerCase();
     if (!term) {
-      return this.supplies;
+      return this.supplies();
     }
 
-    return this.supplies.filter((supply) => supply.toLowerCase().includes(term));
+    return this.supplies().filter(
+      (supply) => supply.name.toLowerCase().includes(term) || supply.brand.toLowerCase().includes(term)
+    );
   });
 
-  toggleSupply(item: string): void {
-    this.selectedSupplies.update((current) =>
-      current.includes(item) ? current.filter((supply) => supply !== item) : [...current, item]
+  readonly canCreate = computed(
+    () =>
+      Boolean(this.selectedClientId()) &&
+      Boolean(this.selectedSellerId()) &&
+      (this.selectedCount() > 0 || Boolean(this.otherSupply().trim()))
+  );
+
+  toggleSupply(supplyId: string): void {
+    this.selectedSupplyIds.update((current) =>
+      current.includes(supplyId) ? current.filter((id) => id !== supplyId) : [...current, supplyId]
     );
+  }
+
+  create(): void {
+    if (!this.canCreate()) {
+      return;
+    }
+
+    this.created.emit({
+      clientId: this.selectedClientId(),
+      sellerId: this.selectedSellerId(),
+      supplyIds: this.selectedSupplyIds(),
+      otherSupply: this.otherSupply(),
+      observations: this.observations()
+    });
   }
 
   close(): void {

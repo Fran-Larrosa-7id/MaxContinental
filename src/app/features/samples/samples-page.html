@@ -48,18 +48,51 @@
           <input
             class="h-10 rounded-md border border-slate-100 px-3 text-base outline-none focus:border-[#3e5f8b]"
             placeholder="Buscar por insumo, cliente o ciudad..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
           />
-          <select class="h-10 rounded-md border border-slate-100 px-3 outline-none focus:border-[#3e5f8b]">
+          <select
+            class="h-10 rounded-md border border-slate-100 px-3 outline-none focus:border-[#3e5f8b]"
+            [ngModel]="statusFilter()"
+            (ngModelChange)="statusFilter.set($event)"
+          >
             @for (status of statuses; track status) {
               <option>{{ status }}</option>
             }
           </select>
         </div>
+
+        @if (selectedCount() > 0) {
+          <div
+            class="mc-selection-alert mb-4 flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-red-700 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p class="flex items-center gap-2 text-sm font-bold">
+              <mat-icon class="!text-[20px] text-yellow-500">warning</mat-icon>
+              Seleccionado: {{ selectedCount() }} muestra activa para eliminar
+            </p>
+            <button
+              type="button"
+              class="h-9 rounded-md bg-[#e62629] px-4 text-sm font-bold text-white transition hover:bg-[#c91f23]"
+              (click)="openDeleteSelected()"
+            >
+              Eliminar seleccionadas
+            </button>
+          </div>
+        }
+
         <article class="overflow-hidden rounded-lg bg-white shadow-sm">
           <div
             class="hidden grid-cols-[56px_1fr_1fr_1.2fr_1fr_1.2fr_84px] border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 md:grid"
           >
-            <span><input type="checkbox" aria-label="Seleccionar todas" /></span>
+            <span>
+              <input
+                type="checkbox"
+                class="size-4 accent-[#d61aa0]"
+                aria-label="Seleccionar todas"
+                [checked]="allFilteredSelected()"
+                (change)="toggleAllActive($any($event.target).checked)"
+              />
+            </span>
             <span>Cliente</span>
             <span>Insumo</span>
             <span>Vendedor / Coord.</span>
@@ -67,9 +100,83 @@
             <span>Proximo Seguimiento</span>
             <span>Accion</span>
           </div>
-          <div class="flex min-h-22 items-center justify-center px-4 py-9 text-center text-slate-500">
-            No se encontraron muestras activas con los filtros actuales.
-          </div>
+
+          @for (sample of filteredActiveSamples(); track sample.id) {
+            <div
+              class="grid gap-4 border-b border-slate-100 px-4 py-4 last:border-b-0 md:grid-cols-[56px_1fr_1fr_1.2fr_1fr_1.2fr_120px] md:items-center"
+              [class.bg-red-50]="isSelected(sample.id)"
+            >
+              <div class="flex items-center justify-between md:block">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden">Seleccionar</span>
+                <input
+                  type="checkbox"
+                  class="size-4 accent-[#d61aa0]"
+                  [checked]="isSelected(sample.id)"
+                  (change)="toggleSampleSelection(sample.id, $any($event.target).checked)"
+                />
+              </div>
+
+              <div class="border-l-4 border-[#45658f] pl-4 md:min-h-14">
+                <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden">Cliente</span>
+                <strong class="block text-base font-black uppercase text-[#082653]">
+                  {{ clientById(sample.clientId).name }}
+                </strong>
+                <small class="block uppercase text-slate-500">{{ clientById(sample.clientId).locality }}</small>
+              </div>
+
+              <div>
+                <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden">Insumo</span>
+                <span class="text-sm font-medium text-slate-700">{{ supplyById(sample.supplyId).name }}</span>
+                <small class="block text-slate-500">{{ supplyById(sample.supplyId).brand }}</small>
+              </div>
+
+              <div>
+                <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden">
+                  Vendedor / Coord.
+                </span>
+                <strong class="block text-sm text-[#082653]">{{ userById(sample.sellerId).name }}</strong>
+                <small class="block text-slate-400">Coordinador: {{ userById(sample.coordinatorId).name }}</small>
+              </div>
+
+              <div>
+                <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden">Estado</span>
+                <span class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                  {{ sample.status }}
+                </span>
+              </div>
+
+              <div>
+                <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden">
+                  Proximo Seguimiento
+                </span>
+                <span class="text-sm text-slate-600" [class.italic]="!sample.nextFollowUp">
+                  {{ sample.nextFollowUp || 'No planificado' }}
+                </span>
+                <small class="mt-1 block text-slate-400 md:hidden">Actualizado: {{ sample.updatedAt }}</small>
+              </div>
+
+              <div class="flex gap-3 md:justify-end">
+                <button
+                  type="button"
+                  class="text-sm font-bold text-[#203f75] transition hover:text-[#102a57]"
+                  (click)="openEditSample(sample.id)"
+                >
+                  Actualizar
+                </button>
+                <button
+                  type="button"
+                  class="text-sm font-bold text-[#e62629] transition hover:text-[#b91c1c]"
+                  (click)="openDeleteSample(sample.id)"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="flex min-h-22 items-center justify-center px-4 py-9 text-center text-slate-500">
+              No se encontraron muestras activas con los filtros actuales.
+            </div>
+          }
         </article>
       </section>
     }
@@ -143,13 +250,58 @@
 </main>
 
 @if (isNewSampleOpen()) {
-  <div class="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
-    <app-new-sample-dialog class="w-full max-w-xl" (closed)="closeDialogs()" (click)="$event.stopPropagation()" />
+  <div class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
+    <app-new-sample-dialog
+      class="mc-dialog w-full max-w-xl"
+      [clients]="clients"
+      [supplies]="supplies"
+      [sellers]="sellers()"
+      (created)="createSamples($event)"
+      (closed)="closeDialogs()"
+      (click)="$event.stopPropagation()"
+    />
+  </div>
+}
+
+@if (editingSample(); as sample) {
+  <div class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
+    <app-edit-sample-dialog
+      class="mc-dialog w-full max-w-xl"
+      [sample]="sample"
+      [users]="users"
+      [statuses]="statuses"
+      [client]="clientById(sample.clientId)"
+      [supply]="supplyById(sample.supplyId)"
+      [seller]="userById(sample.sellerId)"
+      [coordinator]="userById(sample.coordinatorId)"
+      (saved)="updateSample($event)"
+      (deleteRequested)="openDeleteSample($event)"
+      (closed)="closeDialogs()"
+      (click)="$event.stopPropagation()"
+    />
+  </div>
+}
+
+@if (deleteTargetSamples().length > 0) {
+  <div class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
+    <app-confirm-delete-dialog
+      class="mc-dialog w-full max-w-md"
+      [samples]="deleteTargetSamples()"
+      [clients]="clients"
+      [supplies]="supplies"
+      (confirmed)="confirmDelete()"
+      (closed)="closeDialogs()"
+      (click)="$event.stopPropagation()"
+    />
   </div>
 }
 
 @if (isApprovalUploadOpen()) {
-  <div class="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
-    <app-upload-approval-dialog class="w-full max-w-lg" (closed)="closeDialogs()" (click)="$event.stopPropagation()" />
+  <div class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3" (click)="closeDialogs()">
+    <app-upload-approval-dialog
+      class="mc-dialog w-full max-w-lg"
+      (closed)="closeDialogs()"
+      (click)="$event.stopPropagation()"
+    />
   </div>
 }

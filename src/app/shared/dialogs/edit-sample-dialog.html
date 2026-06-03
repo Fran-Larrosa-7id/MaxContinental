@@ -1,0 +1,136 @@
+<section class="max-h-[90dvh] overflow-hidden rounded-lg bg-white text-[#082653] shadow-2xl">
+  <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+    <h2 class="text-2xl font-black">Muestra: {{ supply().name }}</h2>
+    <button
+      type="button"
+      class="flex size-9 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+      aria-label="Cerrar"
+      (click)="close()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="mc-scrollbar max-h-[calc(90dvh-148px)] overflow-auto px-6 py-5">
+    <section class="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm">
+      <div class="grid grid-cols-2 gap-4 border-b border-slate-200 pb-3">
+        <div>
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400">Estado Actual:</span>
+          <span class="mt-1 inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+            {{ sample().status }}
+          </span>
+        </div>
+        <div class="text-right">
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400">Creada el:</span>
+          <span class="mt-1 block text-sm font-medium">{{ sample().updatedAt }}</span>
+        </div>
+      </div>
+
+      <div class="grid gap-4 pt-3 sm:grid-cols-2">
+        <div>
+          <span class="block text-xs text-slate-500">Vendedor Asignado:</span>
+          <strong class="text-sm">{{ seller().name }}</strong>
+        </div>
+        <div>
+          <span class="block text-xs text-slate-500">Coordinador:</span>
+          <strong class="text-sm">{{ coordinator().name }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-5 rounded-lg border border-slate-200 p-4">
+      <h3 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-3 text-base font-black uppercase">
+        <mat-icon class="!text-[19px]">schedule</mat-icon>
+        Movimientos de Estado ({{ sample().history.length }})
+      </h3>
+
+      <div class="space-y-3 border-l border-slate-200 pl-4">
+        @for (movement of sample().history; track movement.id) {
+          <article class="relative rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+            <span class="absolute -left-[21px] top-4 size-3 rounded-full border-2 border-white bg-blue-500"></span>
+            <div class="mb-2 flex items-start justify-between gap-3">
+              <div>
+                <strong class="text-xs">{{ movement.author }}</strong>
+                <span class="ml-1 rounded bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase text-slate-500">
+                  {{ movement.authorRole }}
+                </span>
+              </div>
+              <small class="text-slate-400">{{ movement.date }}</small>
+            </div>
+            <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+              {{ movement.from || 'Ingreso inicial' }} ->
+              <span class="rounded-full bg-blue-100 px-2 py-0.5 text-blue-700">{{ movement.to }}</span>
+            </p>
+            <p class="rounded border border-slate-100 bg-slate-50 p-3 text-sm italic text-slate-600">
+              {{ movement.note }}
+            </p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <label class="mb-2 mt-5 block text-sm font-medium" for="sampleComment">Agregar Comentario</label>
+    <textarea
+      id="sampleComment"
+      class="min-h-20 w-full resize-y rounded-md border border-slate-100 p-3 outline-none focus:border-[#3e5f8b]"
+      placeholder="Anotaciones, feedback del cliente, etc. Use @ para mencionar."
+      [ngModel]="comment()"
+      (ngModelChange)="comment.set($event)"
+    ></textarea>
+
+    <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <label class="text-sm" for="mentionUser">Mencionar:</label>
+      <select
+        id="mentionUser"
+        class="h-9 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-[#3e5f8b]"
+        [ngModel]="mentionUserId()"
+        (ngModelChange)="mentionUserId.set($event)"
+      >
+        <option value="">Seleccionar usuario...</option>
+        @for (user of users(); track user.id) {
+          <option [value]="user.id">@{{ user.name }} - {{ user.role }}</option>
+        }
+      </select>
+    </div>
+
+    <label class="mb-2 mt-5 block text-sm font-medium" for="sampleStatus">Cambiar Estado</label>
+    <select
+      id="sampleStatus"
+      class="h-10 w-full rounded-md border border-slate-100 px-3 outline-none focus:border-[#3e5f8b]"
+      [ngModel]="selectedStatus() || sample().status"
+      (ngModelChange)="selectedStatus.set($event)"
+    >
+      @for (status of statuses(); track status) {
+        @if (status !== 'Todos los estados') {
+          <option [value]="status">{{ status }}{{ status === sample().status ? ' (actual)' : '' }}</option>
+        }
+      }
+    </select>
+  </div>
+
+  <footer class="flex flex-col-reverse gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:justify-between">
+    <button
+      type="button"
+      class="h-10 rounded-md border border-red-300 px-4 font-medium text-red-600 transition hover:bg-red-50"
+      (click)="requestDelete()"
+    >
+      Eliminar Muestra
+    </button>
+    <div class="flex flex-col-reverse gap-3 sm:flex-row">
+      <button
+        type="button"
+        class="h-10 rounded-md border border-slate-300 px-5 font-medium text-slate-700 transition hover:bg-slate-50"
+        (click)="close()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="h-10 rounded-md bg-[#45658f] px-5 font-bold text-white transition hover:bg-[#31547f]"
+        (click)="save()"
+      >
+        Guardar
+      </button>
+    </div>
+  </footer>
+</section>
