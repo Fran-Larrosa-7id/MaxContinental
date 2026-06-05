@@ -1,11 +1,18 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { VisitContextService } from '../../core/visit-context.service';
 import { ConfirmDeleteDialog } from '../../shared/dialogs/confirm-delete-dialog';
 import { EditSampleDialog } from '../../shared/dialogs/edit-sample-dialog';
 import { NewSampleDialog } from '../../shared/dialogs/new-sample-dialog';
 import { UploadApprovalDialog } from '../../shared/dialogs/upload-approval-dialog';
-import { MOCK_CLIENTS, MOCK_SAMPLES, MOCK_SUPPLIES, MOCK_USERS, STATUS_FILTERS } from './samples.mock';
+import {
+  MOCK_CLIENTS,
+  MOCK_SAMPLES,
+  MOCK_SUPPLIES,
+  MOCK_USERS,
+  STATUS_FILTERS,
+} from './samples.mock';
 import {
   CreateSamplePayload,
   MockClient,
@@ -16,15 +23,24 @@ import {
   SampleStatus,
   SampleTab,
   StatusFilter,
-  UpdateSamplePayload
+  UpdateSamplePayload,
 } from './samples.types';
 
 @Component({
   selector: 'app-samples-page',
-  imports: [FormsModule, MatIconModule, NewSampleDialog, EditSampleDialog, ConfirmDeleteDialog, UploadApprovalDialog],
-  templateUrl: './samples-page.html'
+  imports: [
+    FormsModule,
+    MatIconModule,
+    NewSampleDialog,
+    EditSampleDialog,
+    ConfirmDeleteDialog,
+    UploadApprovalDialog,
+  ],
+  templateUrl: './samples-page.html',
 })
 export class SamplesPage {
+  private readonly visitContext = inject(VisitContextService);
+
   readonly selectedTab = signal<SampleTab>('active');
   readonly resolutionFilter = signal<ResolutionFilter>('approved');
   readonly statusFilter = signal<StatusFilter>('Todos los estados');
@@ -40,22 +56,27 @@ export class SamplesPage {
   readonly supplies = MOCK_SUPPLIES;
   readonly users = MOCK_USERS;
   readonly statuses = STATUS_FILTERS;
+  readonly activeClient = this.visitContext.activeClient;
 
   readonly sellers = computed(() => this.users.filter((user) => user.isSeller));
-  readonly editingSample = computed(() => this.samples().find((sample) => sample.id === this.editingSampleId()) ?? null);
+  readonly editingSample = computed(
+    () => this.samples().find((sample) => sample.id === this.editingSampleId()) ?? null,
+  );
   readonly selectedCount = computed(() => this.selectedSampleIds().length);
   readonly deleteTargetSamples = computed(() =>
-    this.samples().filter((sample) => this.deleteTargetIds().includes(sample.id))
+    this.samples().filter((sample) => this.deleteTargetIds().includes(sample.id)),
   );
 
   readonly filteredActiveSamples = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
     const status = this.statusFilter();
+    const activeClientId = this.visitContext.activeClientId();
 
     return this.samples().filter((sample) => {
       const client = this.clientById(sample.clientId);
       const supply = this.supplyById(sample.supplyId);
       const seller = this.userById(sample.sellerId);
+      const matchesClient = !activeClientId || sample.clientId === activeClientId;
       const matchesStatus = status === 'Todos los estados' || sample.status === status;
       const matchesQuery =
         !query ||
@@ -65,7 +86,7 @@ export class SamplesPage {
         supply.brand.toLowerCase().includes(query) ||
         seller.name.toLowerCase().includes(query);
 
-      return matchesStatus && matchesQuery;
+      return matchesClient && matchesStatus && matchesQuery;
     });
   });
 
@@ -78,16 +99,18 @@ export class SamplesPage {
   readonly tabs: { id: SampleTab; label: string; icon: string }[] = [
     { id: 'active', label: 'Muestras Activas', icon: 'science' },
     { id: 'resolved', label: 'Muestras Resueltas', icon: 'handshake' },
-    { id: 'approvals', label: 'Planillas de Aprobacion', icon: 'verified' }
+    { id: 'approvals', label: 'Planillas de Aprobacion', icon: 'verified' },
   ];
 
   readonly resolutionFilters: { id: ResolutionFilter; label: string }[] = [
     { id: 'approved', label: 'Aprobadas' },
-    { id: 'rejected', label: 'Rechazadas' }
+    { id: 'rejected', label: 'Rechazadas' },
   ];
 
   readonly emptyMessage = computed(() =>
-    this.resolutionFilter() === 'approved' ? 'No hay muestras resueltas.' : 'No hay muestras rechazadas.'
+    this.resolutionFilter() === 'approved'
+      ? 'No hay muestras resueltas.'
+      : 'No hay muestras rechazadas.',
   );
 
   openNewSample(): void {
@@ -124,7 +147,9 @@ export class SamplesPage {
   createSamples(payload: CreateSamplePayload): void {
     const today = this.formatDate(new Date());
     const now = this.formatDateTime(new Date());
-    const supplyIds = payload.supplyIds.length ? payload.supplyIds : [this.addOtherSupply(payload.otherSupply)];
+    const supplyIds = payload.supplyIds.length
+      ? payload.supplyIds
+      : [this.addOtherSupply(payload.otherSupply)];
 
     const createdSamples = supplyIds
       .filter((supplyId): supplyId is string => Boolean(supplyId))
@@ -144,9 +169,9 @@ export class SamplesPage {
             authorRole: 'Jefe de Ventas' as const,
             to: 'Creada' as SampleStatus,
             note: payload.observations?.trim() || 'Muestra creada.',
-            date: now
-          }
-        ]
+            date: now,
+          },
+        ],
       }));
 
     this.samples.update((current) => [...createdSamples, ...current]);
@@ -182,12 +207,12 @@ export class SamplesPage {
                   from: previousStatus,
                   to: payload.status,
                   note: noteParts.filter(Boolean).join(' - ') || 'Actualizacion de muestra.',
-                  date: this.formatDateTime(new Date())
-                }
-              ]
+                  date: this.formatDateTime(new Date()),
+                },
+              ],
             }
-          : item
-      )
+          : item,
+      ),
     );
     this.closeDialogs();
   }
@@ -201,14 +226,16 @@ export class SamplesPage {
 
   toggleSampleSelection(sampleId: string, checked: boolean): void {
     this.selectedSampleIds.update((current) =>
-      checked ? [...new Set([...current, sampleId])] : current.filter((id) => id !== sampleId)
+      checked ? [...new Set([...current, sampleId])] : current.filter((id) => id !== sampleId),
     );
   }
 
   toggleAllActive(checked: boolean): void {
     const filteredIds = this.filteredActiveSamples().map((sample) => sample.id);
     this.selectedSampleIds.update((current) =>
-      checked ? [...new Set([...current, ...filteredIds])] : current.filter((id) => !filteredIds.includes(id))
+      checked
+        ? [...new Set([...current, ...filteredIds])]
+        : current.filter((id) => !filteredIds.includes(id)),
     );
   }
 
@@ -235,7 +262,12 @@ export class SamplesPage {
     }
 
     const id = `supply-custom-${Date.now()}`;
-    this.supplies.push({ id, name, brand: 'OTROS' });
+    this.supplies.push({
+      id,
+      name,
+      brand: 'OTROS',
+      description: 'Artículo agregado manualmente durante la carga de una muestra.',
+    });
     return id;
   }
 
@@ -246,7 +278,7 @@ export class SamplesPage {
   private formatDateTime(date: Date): string {
     return `${this.formatDate(date)}, ${date.toLocaleTimeString('es-AR', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })}`;
   }
 }

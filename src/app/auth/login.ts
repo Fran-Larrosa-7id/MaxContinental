@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-login',
   imports: [FormsModule, MatIconModule],
-  templateUrl: './login.html'
+  templateUrl: './login.html',
 })
 export class Login {
   readonly user = signal('APARRA');
@@ -16,6 +16,6 @@ export class Login {
   constructor(private readonly router: Router) {}
 
   login(): void {
-    this.router.navigateByUrl('/app/muestras');
+    this.router.navigateByUrl('/app/clientes');
   }
 }

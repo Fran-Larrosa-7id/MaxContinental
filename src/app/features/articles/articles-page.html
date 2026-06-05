@@ -1,0 +1,72 @@
+<main class="mx-auto w-full max-w-[1320px] px-4 py-7 sm:px-8" data-aos="fade-up">
+  <section class="mb-5">
+    <h2 class="text-2xl font-black">Artículos</h2>
+    <!-- @if (activeClient(); as client) { -->
+      <!-- TODO: de momento queda comentado -->
+      <!-- <p class="mt-1 text-sm text-slate-500">Catálogo disponible para {{ client.name }}.</p> -->
+    <!-- } @else { -->
+      <p class="mt-1 text-sm text-slate-500">Catálogo general de artículos e insumos.</p>
+    <!-- } -->
+  </section>
+
+  <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
+    <label class="relative block">
+      <mat-icon class="pointer-events-none absolute left-3 top-2.5 !text-[20px] text-slate-400"
+        >search</mat-icon
+      >
+      <input
+        class="h-10 w-full rounded-md border border-slate-200 pl-10 pr-3 outline-none transition focus:border-[#3e5f8b]"
+        placeholder="Buscar por nombre, descripción o marca..."
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+      />
+    </label>
+  </div>
+
+  <section class="overflow-hidden rounded-lg bg-white shadow-sm">
+    <div
+      class="hidden grid-cols-[1fr_1.5fr_170px] gap-5 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-500 md:grid"
+    >
+      <span>Nombre</span>
+      <span>Descripción</span>
+      <span class="text-right">Acción</span>
+    </div>
+
+    @for (article of filteredArticles(); track article.id) {
+      <article
+        class="grid gap-4 border-b border-slate-100 px-5 py-5 last:border-b-0 md:grid-cols-[1fr_1.5fr_170px] md:items-center"
+      >
+        <div class="border-l-4 border-[#45658f] pl-4">
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400 md:hidden"
+            >Nombre</span
+          >
+          <strong class="block text-sm font-black uppercase text-[#082653]">{{
+            article.name
+          }}</strong>
+          <small class="mt-1 block font-bold uppercase text-slate-400">{{ article.brand }}</small>
+        </div>
+
+        <div>
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400 md:hidden"
+            >Descripción</span
+          >
+          <p class="text-sm leading-relaxed text-slate-600">{{ article.description }}</p>
+        </div>
+
+        <div class="md:text-right">
+          <button
+            type="button"
+            class="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f] md:w-auto"
+          >
+            <mat-icon class="!text-[18px]">science</mat-icon>
+            Pedir muestra
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <div class="px-5 py-12 text-center text-slate-500">
+        No hay artículos disponibles para los filtros actuales.
+      </div>
+    }
+  </section>
+</main>

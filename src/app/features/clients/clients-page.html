@@ -1,0 +1,102 @@
+<main class="mx-auto w-full max-w-[1320px] px-4 py-7 sm:px-8" data-aos="fade-up">
+  <section class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h2 class="text-2xl font-black">Clientes</h2>
+      <p class="mt-1 text-sm text-slate-500">
+        Seleccione una acción para comenzar la gestión con un cliente.
+      </p>
+    </div>
+    <span class="text-sm font-medium text-slate-500">{{ filteredClients().length }} clientes</span>
+  </section>
+
+  <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
+    <label class="relative block">
+      <mat-icon class="pointer-events-none absolute left-3 top-2.5 !text-[20px] text-slate-400"
+        >search</mat-icon
+      >
+      <input
+        class="h-10 w-full rounded-md border border-slate-200 pl-10 pr-3 outline-none transition focus:border-[#3e5f8b]"
+        placeholder="Buscar por cliente, localidad, dirección o teléfono..."
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+      />
+    </label>
+  </div>
+
+  <section class="overflow-hidden rounded-lg bg-white shadow-sm">
+    <div
+      class="hidden grid-cols-[1.25fr_0.8fr_1fr_0.75fr_190px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-500 lg:grid"
+    >
+      <span>Cliente</span>
+      <span>Localidad</span>
+      <span>Dirección</span>
+      <span>Teléfono</span>
+      <span class="text-right">Acciones</span>
+    </div>
+
+    @for (client of filteredClients(); track client.id) {
+      <article
+        class="grid gap-4 border-b border-slate-100 px-5 py-4 last:border-b-0 lg:grid-cols-[1.25fr_0.8fr_1fr_0.75fr_190px] lg:items-center"
+        [class.bg-blue-50]="activeClientId() === client.id"
+      >
+        <div class="border-l-4 border-[#45658f] pl-4">
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400 lg:hidden"
+            >Cliente</span
+          >
+          <strong class="block text-base font-black uppercase text-[#082653]">{{
+            client.name
+          }}</strong>
+          @if (activeClientId() === client.id) {
+            <small
+              class="mt-1 inline-flex rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700"
+            >
+              Cliente activo
+            </small>
+          }
+        </div>
+
+        <div>
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400 lg:hidden"
+            >Localidad</span
+          >
+          <span class="text-sm text-slate-700">{{ client.locality }}</span>
+        </div>
+
+        <div>
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400 lg:hidden"
+            >Dirección</span
+          >
+          <span class="text-sm text-slate-700">{{ client.address }}</span>
+        </div>
+
+        <div>
+          <span class="block text-xs font-black uppercase tracking-wider text-slate-400 lg:hidden"
+            >Teléfono</span
+          >
+          <span class="text-sm font-medium text-slate-700">{{ client.phone }}</span>
+        </div>
+
+        <div class="flex gap-2 lg:justify-end">
+          <button
+            type="button"
+            class="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border border-[#45658f] px-3 text-sm font-bold text-[#203f75] transition hover:bg-blue-50 lg:flex-none"
+            (click)="selectClient(client, 'call')"
+          >
+            <mat-icon class="!text-[18px]">phone</mat-icon>
+            Llamar
+          </button>
+          <button
+            type="button"
+            class="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md bg-[#45658f] px-3 text-sm font-bold text-white transition hover:bg-[#31547f] lg:flex-none"
+            (click)="selectClient(client, 'visit')"
+          >
+            <mat-icon class="!text-[18px]">near_me</mat-icon>
+            Visitar
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <div class="px-5 py-12 text-center text-slate-500">No se encontraron clientes.</div>
+    }
+  </section>
+</main>

@@ -11,18 +11,27 @@ export type SampleStatus =
 
 export type StatusFilter = 'Todos los estados' | SampleStatus;
 
-export type UserRole = 'Admin' | 'Jefe de Ventas' | 'Team Leader' | 'Vendedor' | 'Coordinador' | 'Subcoordinacion';
+export type UserRole =
+  | 'Admin'
+  | 'Jefe de Ventas'
+  | 'Team Leader'
+  | 'Vendedor'
+  | 'Coordinador'
+  | 'Subcoordinacion';
 
 export type MockClient = {
   id: string;
   name: string;
   locality: string;
+  address: string;
+  phone: string;
 };
 
 export type MockSupply = {
   id: string;
   name: string;
   brand: string;
+  description: string;
 };
 
 export type MockUser = {

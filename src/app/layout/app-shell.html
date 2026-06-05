@@ -1,7 +1,9 @@
 <div class="min-h-dvh bg-[#c9d6e4] text-[#082653]">
-  <aside class="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col bg-[#192f56] text-white shadow-xl md:flex">
+  <aside
+    class="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col bg-[#192f56] text-white shadow-xl md:flex"
+  >
     <a
-      routerLink="/app/muestras"
+      routerLink="/app/clientes"
       class="flex h-[72px] items-center gap-3 border-b border-white/10 bg-[#203f75] px-3"
     >
       <span
@@ -9,7 +11,6 @@
       >
         <mat-icon>terrain</mat-icon>
       </span>
-      <span class="text-lg font-black leading-tight">MAX CONTINENTAL</span>
     </a>
 
     <nav class="mt-4 flex-1">
@@ -27,7 +28,9 @@
 
     <section class="border-t border-white/10 bg-[#233e79] p-3">
       <div class="mb-3 flex items-center gap-3">
-        <span class="flex size-9 items-center justify-center rounded-full bg-[#a7cbe7] font-black text-[#14315d]">
+        <span
+          class="flex size-9 items-center justify-center rounded-full bg-[#a7cbe7] font-black text-[#14315d]"
+        >
           A
         </span>
         <span>
@@ -54,34 +57,45 @@
         <span class="flex size-9 items-center justify-center rounded-full bg-white text-[#3e5f8b]">
           <mat-icon>terrain</mat-icon>
         </span>
-        <span class="text-sm font-black leading-tight">MAX CONTINENTAL</span>
       </div>
 
-      <h1 class="hidden text-xl font-black uppercase tracking-[0.22em] text-[#afd1e4] md:block">
-        {{ pageTitle() }}
-      </h1>
-      <h1 class="text-base font-black uppercase tracking-[0.14em] text-[#afd1e4] md:hidden">
+      <h1
+        class="min-w-0 flex-1 truncate px-3 text-sm font-black uppercase tracking-[0.1em] text-[#ffffff] sm:text-base md:px-0 md:text-xl md:tracking-[0.22em]"
+      >
         {{ pageTitle() }}
       </h1>
 
-      <button
-        type="button"
-        class="flex size-10 items-center justify-center rounded-md text-slate-300 transition hover:bg-white/10 hover:text-white"
-        aria-label="Notificaciones"
-      >
-        <mat-icon>notifications_none</mat-icon>
-      </button>
+      <div class="flex shrink-0 items-center gap-2">
+        @if (activeClient()) {
+          <button
+            type="button"
+            class="flex h-9 items-center gap-1.5 rounded-md bg-[#e62629] px-3 text-xs font-bold text-white transition hover:bg-[#c91f23] sm:text-sm"
+            (click)="finishVisit()"
+          >
+            <mat-icon class="!text-[18px]">stop_circle</mat-icon>
+            Finalizar
+          </button>
+        }
+
+        <button
+          type="button"
+          class="hidden size-10 items-center justify-center rounded-md text-slate-300 transition hover:bg-white/10 hover:text-white sm:flex"
+          aria-label="Notificaciones"
+        >
+          <mat-icon>notifications_none</mat-icon>
+        </button>
+      </div>
     </header>
 
-    <nav class="sticky top-[66px] z-10 grid grid-cols-2 bg-[#192f56] text-white md:hidden">
+    <nav class="sticky top-[66px] z-10 grid grid-cols-4 bg-[#192f56] text-white md:hidden">
       @for (item of navItems; track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="bg-[#496b95]"
-          class="flex h-12 items-center justify-center gap-2 text-sm font-semibold"
+          class="flex h-[52px] min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-semibold"
         >
-          <mat-icon class="!text-[19px]">{{ item.icon }}</mat-icon>
-          {{ item.label }}
+          <mat-icon class="!text-[18px]">{{ item.icon }}</mat-icon>
+          <span class="truncate">{{ item.mobileLabel }}</span>
         </a>
       }
     </nav>
