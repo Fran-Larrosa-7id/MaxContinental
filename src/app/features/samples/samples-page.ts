@@ -1,6 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { SampleOrder, SampleOrderStatus } from '../../core/sample-orders.models';
+import { SampleOrdersService } from '../../core/sample-orders.service';
 import { VisitContextService } from '../../core/visit-context.service';
 import { ConfirmDeleteDialog } from '../../shared/dialogs/confirm-delete-dialog';
 import { EditSampleDialog } from '../../shared/dialogs/edit-sample-dialog';
@@ -40,6 +42,7 @@ import {
 })
 export class SamplesPage {
   private readonly visitContext = inject(VisitContextService);
+  private readonly ordersService = inject(SampleOrdersService);
 
   readonly selectedTab = signal<SampleTab>('active');
   readonly resolutionFilter = signal<ResolutionFilter>('approved');
@@ -51,12 +54,16 @@ export class SamplesPage {
   readonly isApprovalUploadOpen = signal(false);
   readonly editingSampleId = signal<string | null>(null);
   readonly deleteTargetIds = signal<string[]>([]);
+  readonly orderSearchQuery = signal('');
+  readonly estimatedDeliveryDrafts = signal<Record<string, string>>({});
 
   readonly clients = MOCK_CLIENTS;
   readonly supplies = MOCK_SUPPLIES;
   readonly users = MOCK_USERS;
   readonly statuses = STATUS_FILTERS;
   readonly activeClient = this.visitContext.activeClient;
+  readonly orders = this.ordersService.orders;
+  readonly orderStatusSteps: SampleOrderStatus[] = ['Pedido', 'Enviado', 'Recibido', 'Entregado'];
 
   readonly sellers = computed(() => this.users.filter((user) => user.isSeller));
   readonly editingSample = computed(
@@ -66,6 +73,36 @@ export class SamplesPage {
   readonly deleteTargetSamples = computed(() =>
     this.samples().filter((sample) => this.deleteTargetIds().includes(sample.id)),
   );
+  readonly filteredOrders = computed(() => {
+    const activeClientId = this.visitContext.activeClientId();
+    const query = this.orderSearchQuery().trim().toLowerCase();
+
+    return this.orders().filter((order) => {
+      const client = this.clientById(order.clientId);
+      const seller = this.userById(order.sellerId);
+      const supplyNames = order.items.map((item) => this.supplyById(item.supplyId).name).join(' ');
+      const matchesClient = !activeClientId || order.clientId === activeClientId;
+      const matchesQuery =
+        !query ||
+        client.name.toLowerCase().includes(query) ||
+        seller.name.toLowerCase().includes(query) ||
+        supplyNames.toLowerCase().includes(query) ||
+        order.status.toLowerCase().includes(query);
+
+      return matchesClient && matchesQuery;
+    });
+  });
+  readonly orderGroups = computed(() => {
+    const groups = new Map<string, SampleOrder[]>();
+    for (const order of this.filteredOrders()) {
+      groups.set(order.sellerId, [...(groups.get(order.sellerId) ?? []), order]);
+    }
+
+    return Array.from(groups.entries()).map(([sellerId, orders]) => ({
+      seller: this.userById(sellerId),
+      orders,
+    }));
+  });
 
   readonly filteredActiveSamples = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -243,6 +280,39 @@ export class SamplesPage {
     return this.selectedSampleIds().includes(sampleId);
   }
 
+  orderAlert(order: SampleOrder) {
+    return this.ordersService.alertFor(order);
+  }
+
+  statusReached(order: SampleOrder, status: SampleOrderStatus): boolean {
+    return this.orderStatusSteps.indexOf(status) <= this.orderStatusSteps.indexOf(order.status);
+  }
+
+  updateEstimatedDelivery(orderId: string, value: string): void {
+    this.estimatedDeliveryDrafts.update((current) => ({ ...current, [orderId]: value }));
+  }
+
+  estimatedDeliveryValue(order: SampleOrder): string {
+    return this.estimatedDeliveryDrafts()[order.id] ?? this.toInputDate(order.estimatedDelivery);
+  }
+
+  markSent(order: SampleOrder): void {
+    const inputDate = this.estimatedDeliveryValue(order);
+    if (!inputDate) {
+      return;
+    }
+
+    this.ordersService.advanceOrder(order.id, 'Enviado', this.fromInputDate(inputDate));
+  }
+
+  markReceived(order: SampleOrder): void {
+    this.ordersService.advanceOrder(order.id, 'Recibido');
+  }
+
+  markDelivered(order: SampleOrder): void {
+    this.ordersService.advanceOrder(order.id, 'Entregado');
+  }
+
   clientById(clientId: string): MockClient {
     return this.clients.find((client) => client.id === clientId) ?? this.clients[0];
   }
@@ -280,5 +350,19 @@ export class SamplesPage {
       hour: '2-digit',
       minute: '2-digit',
     })}`;
+  }
+
+  private toInputDate(value: string | null): string {
+    if (!value) {
+      return '';
+    }
+
+    const [day, month, year] = value.split('/');
+    return `${year}-${month}-${day}`;
+  }
+
+  private fromInputDate(value: string): string {
+    const [year, month, day] = value.split('-');
+    return `${day}/${month}/${year}`;
   }
 }

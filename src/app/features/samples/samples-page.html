@@ -45,7 +45,247 @@
   @switch (selectedTab()) {
     @case ('active') {
       <section class="pt-6">
-        <h2 class="mb-5 text-2xl font-black">Muestras Activas</h2>
+        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-2xl font-black">Pedidos de muestras</h2>
+            <p class="mt-1 text-sm text-slate-500">
+              Seguimiento desde el pedido hasta la entrega al cliente.
+            </p>
+          </div>
+          <span class="text-sm font-bold text-slate-500"
+            >{{ filteredOrders().length }} pedidos</span
+          >
+        </div>
+
+        <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
+          <label class="relative block">
+            <mat-icon
+              class="pointer-events-none absolute left-3 top-2.5 !text-[20px] text-slate-400"
+            >
+              search
+            </mat-icon>
+            <input
+              class="h-10 w-full rounded-md border border-slate-200 pl-10 pr-3 outline-none transition focus:border-[#3e5f8b]"
+              placeholder="Buscar pedido por cliente, vendedor, artículo o estado..."
+              [ngModel]="orderSearchQuery()"
+              (ngModelChange)="orderSearchQuery.set($event)"
+            />
+          </label>
+        </div>
+
+        <div class="space-y-7">
+          @for (group of orderGroups(); track group.seller.id) {
+            <section>
+              <div class="mb-3 flex items-center gap-3">
+                <span
+                  class="flex size-9 items-center justify-center rounded-full bg-[#203f75] font-black text-white"
+                >
+                  {{ group.seller.name.charAt(0) }}
+                </span>
+                <div>
+                  <h3 class="font-black text-[#082653]">{{ group.seller.name }}</h3>
+                  <p class="text-xs text-slate-500">{{ group.orders.length }} pedidos asignados</p>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                @for (order of group.orders; track order.id) {
+                  <article class="overflow-hidden rounded-lg bg-white shadow-sm">
+                    <header
+                      class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                          <strong class="text-base font-black">{{
+                            clientById(order.clientId).name
+                          }}</strong>
+                          <span
+                            class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600"
+                          >
+                            #{{ order.id }}
+                          </span>
+                        </div>
+                        <p class="mt-1 text-xs text-slate-500">
+                          Creado {{ order.createdAt }} · Actualizado {{ order.updatedAt }}
+                        </p>
+                      </div>
+
+                      <span
+                        class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-black"
+                        [class.bg-blue-100]="order.status === 'Pedido'"
+                        [class.text-blue-700]="order.status === 'Pedido'"
+                        [class.bg-indigo-100]="order.status === 'Enviado'"
+                        [class.text-indigo-700]="order.status === 'Enviado'"
+                        [class.bg-orange-100]="order.status === 'Recibido'"
+                        [class.text-orange-700]="order.status === 'Recibido'"
+                        [class.bg-red-100]="order.status === 'Entregado'"
+                        [class.text-red-700]="order.status === 'Entregado'"
+                      >
+                        {{ order.status }}
+                      </span>
+                    </header>
+
+                    <div class="px-5 py-5">
+                      <div class="mb-5 grid grid-cols-4 gap-2">
+                        @for (step of orderStatusSteps; track step; let index = $index) {
+                          <div class="relative text-center">
+                            @if (index > 0) {
+                              <span
+                                class="absolute right-1/2 top-3 h-0.5 w-full"
+                                [class.bg-[#45658f]]="statusReached(order, step)"
+                                [class.bg-slate-200]="!statusReached(order, step)"
+                              ></span>
+                            }
+                            <span
+                              class="relative z-10 mx-auto flex size-6 items-center justify-center rounded-full border-2 text-[10px] font-black"
+                              [class.border-[#45658f]]="statusReached(order, step)"
+                              [class.bg-[#45658f]]="statusReached(order, step)"
+                              [class.text-white]="statusReached(order, step)"
+                              [class.border-slate-300]="!statusReached(order, step)"
+                              [class.bg-white]="!statusReached(order, step)"
+                              [class.text-slate-400]="!statusReached(order, step)"
+                            >
+                              @if (statusReached(order, step)) {
+                                <mat-icon class="!size-3.5 !text-sm">check</mat-icon>
+                              } @else {
+                                {{ index + 1 }}
+                              }
+                            </span>
+                            <span
+                              class="mt-1 block text-[10px] font-bold uppercase text-slate-500 sm:text-xs"
+                            >
+                              {{ step }}
+                            </span>
+                          </div>
+                        }
+                      </div>
+
+                      <div
+                        class="mb-5 flex items-start gap-3 rounded-lg border p-3"
+                        [class.border-green-200]="orderAlert(order).tone === 'green'"
+                        [class.bg-green-50]="orderAlert(order).tone === 'green'"
+                        [class.text-green-800]="orderAlert(order).tone === 'green'"
+                        [class.border-yellow-300]="orderAlert(order).tone === 'yellow'"
+                        [class.bg-yellow-50]="orderAlert(order).tone === 'yellow'"
+                        [class.text-yellow-800]="orderAlert(order).tone === 'yellow'"
+                        [class.border-orange-300]="orderAlert(order).tone === 'orange'"
+                        [class.bg-orange-50]="orderAlert(order).tone === 'orange'"
+                        [class.text-orange-800]="orderAlert(order).tone === 'orange'"
+                        [class.border-red-300]="orderAlert(order).tone === 'red'"
+                        [class.bg-red-50]="orderAlert(order).tone === 'red'"
+                        [class.text-red-800]="orderAlert(order).tone === 'red'"
+                        [class.border-blue-200]="orderAlert(order).tone === 'blue'"
+                        [class.bg-blue-50]="orderAlert(order).tone === 'blue'"
+                        [class.text-blue-800]="orderAlert(order).tone === 'blue'"
+                      >
+                        <mat-icon class="!text-[20px]">
+                          {{
+                            orderAlert(order).tone === 'green'
+                              ? 'notifications_active'
+                              : orderAlert(order).tone === 'red'
+                                ? 'priority_high'
+                                : 'warning'
+                          }}
+                        </mat-icon>
+                        <div>
+                          <strong class="block text-sm">{{ orderAlert(order).label }}</strong>
+                          <p class="mt-0.5 text-xs opacity-80">{{ orderAlert(order).message }}</p>
+                        </div>
+                      </div>
+
+                      <div class="grid gap-3 lg:grid-cols-[1fr_auto]">
+                        <div class="space-y-2">
+                          @for (item of order.items; track item.supplyId) {
+                            <div
+                              class="grid gap-2 rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-sm sm:grid-cols-[1fr_auto]"
+                            >
+                              <div>
+                                <strong>{{ supplyById(item.supplyId).name }}</strong>
+                                <small class="ml-2 text-slate-400">{{
+                                  supplyById(item.supplyId).brand
+                                }}</small>
+                                @if (item.observation) {
+                                  <p class="mt-1 text-xs italic text-slate-500">
+                                    {{ item.observation }}
+                                  </p>
+                                }
+                              </div>
+                              <span class="font-black text-[#203f75]">x{{ item.quantity }}</span>
+                            </div>
+                          }
+                        </div>
+
+                        <div class="flex min-w-56 flex-col justify-end gap-2">
+                          @if (order.status === 'Pedido') {
+                            <label
+                              class="text-xs font-black uppercase text-slate-500"
+                              [for]="'delivery-' + order.id"
+                            >
+                              Fecha estimada de entrega
+                            </label>
+                            <input
+                              type="date"
+                              class="h-10 rounded-md border border-slate-200 px-3 outline-none focus:border-[#45658f]"
+                              [id]="'delivery-' + order.id"
+                              [ngModel]="estimatedDeliveryValue(order)"
+                              (ngModelChange)="updateEstimatedDelivery(order.id, $event)"
+                            />
+                            <button
+                              type="button"
+                              class="h-10 rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f] disabled:cursor-not-allowed disabled:opacity-50"
+                              [disabled]="!estimatedDeliveryValue(order)"
+                              (click)="markSent(order)"
+                            >
+                              Marcar enviado
+                            </button>
+                          }
+
+                          @if (order.status === 'Enviado') {
+                            <button
+                              type="button"
+                              class="h-10 rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f]"
+                              (click)="markReceived(order)"
+                            >
+                              Marcar recibido
+                            </button>
+                          }
+
+                          @if (order.status === 'Recibido') {
+                            <button
+                              type="button"
+                              class="h-10 rounded-md bg-[#e97815] px-4 text-sm font-bold text-white transition hover:bg-[#c8610e]"
+                              (click)="markDelivered(order)"
+                            >
+                              Marcar entregado
+                            </button>
+                          }
+
+                          @if (order.status === 'Entregado') {
+                            <div
+                              class="rounded-md bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700"
+                            >
+                              Fase de seguimiento activa
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          } @empty {
+            <div
+              class="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-slate-500"
+            >
+              No hay pedidos de muestras para los filtros actuales.
+            </div>
+          }
+        </div>
+
+        <div class="my-9 border-t border-white/70"></div>
+
+        <h2 class="mb-5 text-2xl font-black">Muestras individuales</h2>
         @if (activeClient(); as client) {
           <div
             class="mb-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"
