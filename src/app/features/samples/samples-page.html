@@ -1,26 +1,26 @@
-<main class="mx-auto w-full max-w-[1320px] px-4 py-6 sm:px-8" data-aos="fade-up">
+<main class="mx-auto w-full max-w-[1320px] px-3 py-4 sm:px-8 sm:py-6" data-aos="fade-up">
   <section
-    class="flex flex-col gap-4 border-b border-white/60 pb-4 lg:flex-row lg:items-center lg:justify-between"
+    class="flex flex-col gap-3 border-b border-white/60 pb-4 lg:flex-row lg:items-center lg:justify-between"
   >
-    <div class="flex flex-wrap gap-3">
+    <div class="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:gap-3">
       @for (tab of tabs; track tab.id) {
         <button
           type="button"
-          class="flex h-11 cursor-pointer items-center gap-2 rounded-md px-4 text-sm font-bold shadow-sm transition sm:text-base"
+          class="flex min-w-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md px-1 py-2 text-[10px] font-bold leading-tight shadow-sm transition sm:h-11 sm:flex-row sm:gap-2 sm:px-4 sm:py-0 sm:text-base"
           [class.bg-[#102a57]]="selectedTab() === tab.id"
           [class.text-white]="selectedTab() === tab.id"
           [class.bg-white]="selectedTab() !== tab.id"
           [class.text-slate-700]="selectedTab() !== tab.id"
           (click)="selectedTab.set(tab.id)"
         >
-          <mat-icon class="!text-[18px]">{{ tab.icon }}</mat-icon>
-          {{ tab.label }}
+          <mat-icon class="!text-[17px] sm:!text-[18px]">{{ tab.icon }}</mat-icon>
+          <span class="line-clamp-2 sm:line-clamp-1">{{ tab.label }}</span>
         </button>
       }
     </div>
 
     <span
-      class="inline-flex w-fit items-center gap-2 rounded-md border border-white/70 bg-white/60 px-3 py-2 text-xs font-black uppercase text-[#203f75]"
+      class="hidden w-fit items-center gap-2 rounded-md border border-white/70 bg-white/60 px-3 py-2 text-xs font-black uppercase text-[#203f75] sm:inline-flex"
     >
       <mat-icon class="!text-[18px]">
         {{ currentUser().role === 'Coordinador' ? 'supervisor_account' : 'badge' }}
@@ -31,19 +31,19 @@
 
   @switch (selectedTab()) {
     @case ('active') {
-      <section class="pt-6">
-        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section class="pt-4 sm:pt-6">
+        <div class="mb-4 flex items-end justify-between gap-3 sm:mb-5">
           <div>
-            <h2 class="text-2xl font-black">Muestras activas</h2>
-            <p class="mt-1 text-sm text-slate-500">
+            <h2 class="text-xl font-black sm:text-2xl">Muestras activas</h2>
+            <p class="mt-0.5 hidden text-sm text-slate-500 sm:block">
               Cada artículo avanza de forma independiente dentro de su pedido.
             </p>
           </div>
 
-          <div class="inline-grid grid-cols-2 rounded-md bg-slate-100 p-1 shadow-sm">
+          <div class="inline-grid shrink-0 grid-cols-2 rounded-md bg-slate-100 p-1 shadow-sm">
             <button
               type="button"
-              class="flex h-9 cursor-pointer items-center justify-center gap-2 rounded px-3 text-sm font-bold transition"
+              class="flex size-9 cursor-pointer items-center justify-center rounded text-sm font-bold transition sm:h-9 sm:w-auto sm:gap-2 sm:px-3"
               [class.bg-white]="viewMode() === 'cards'"
               [class.text-[#203f75]]="viewMode() === 'cards'"
               [class.shadow-sm]="viewMode() === 'cards'"
@@ -52,11 +52,11 @@
               (click)="viewMode.set('cards')"
             >
               <mat-icon class="!text-[18px]">view_module</mat-icon>
-              Cards
+              <span class="hidden sm:inline">Cards</span>
             </button>
             <button
               type="button"
-              class="flex h-9 cursor-pointer items-center justify-center gap-2 rounded px-3 text-sm font-bold transition"
+              class="flex size-9 cursor-pointer items-center justify-center rounded text-sm font-bold transition sm:h-9 sm:w-auto sm:gap-2 sm:px-3"
               [class.bg-white]="viewMode() === 'lines'"
               [class.text-[#203f75]]="viewMode() === 'lines'"
               [class.shadow-sm]="viewMode() === 'lines'"
@@ -65,21 +65,23 @@
               (click)="viewMode.set('lines')"
             >
               <mat-icon class="!text-[18px]">view_list</mat-icon>
-              Líneas
+              <span class="hidden sm:inline">Líneas</span>
             </button>
           </div>
         </div>
 
         @if (activeClient(); as client) {
           <div
-            class="mb-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"
+            class="mb-3 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 sm:mb-4 sm:px-4 sm:py-3 sm:text-sm"
           >
             <mat-icon class="!text-[19px]">filter_alt</mat-icon>
             Mostrando muestras de <strong>{{ client.name }}</strong>
           </div>
         }
 
-        <div class="mb-6 grid gap-3 rounded-lg bg-white p-4 shadow-sm lg:grid-cols-[1fr_220px]">
+        <div
+          class="mb-4 grid gap-2 rounded-lg bg-white p-3 shadow-sm sm:mb-6 sm:gap-3 sm:p-4 lg:grid-cols-[1fr_220px]"
+        >
           <label class="relative block">
             <mat-icon
               class="pointer-events-none absolute left-3 top-2.5 !text-[20px] text-slate-400"
@@ -107,17 +109,17 @@
         </div>
 
         @if (viewMode() === 'cards') {
-          <div class="space-y-7">
+          <div class="space-y-5 sm:space-y-7">
             @for (group of orderGroups(); track group.seller.id) {
               <section>
-                <div class="mb-3 flex items-center gap-3">
+                <div class="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
                   <span
-                    class="flex size-9 items-center justify-center rounded-full bg-[#203f75] font-black text-white"
+                    class="flex size-8 items-center justify-center rounded-full bg-[#203f75] text-sm font-black text-white sm:size-9"
                   >
                     {{ group.seller.name.charAt(0) }}
                   </span>
                   <div>
-                    <h3 class="font-black">{{ group.seller.name }}</h3>
+                    <h3 class="text-sm font-black sm:text-base">{{ group.seller.name }}</h3>
                     <p class="text-xs text-slate-500">
                       {{ group.orders.length }} pedidos asignados
                     </p>
@@ -128,37 +130,37 @@
                   @for (order of group.orders; track order.id) {
                     <article class="overflow-hidden rounded-lg bg-white shadow-sm">
                       <header
-                        class="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                        class="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:items-center sm:px-5 sm:py-4"
                       >
-                        <div>
-                          <div class="flex flex-wrap items-center gap-2">
-                            <strong class="font-black">{{
+                        <div class="min-w-0">
+                          <div class="flex min-w-0 items-center gap-2">
+                            <strong class="truncate text-sm font-black sm:text-base">{{
                               clientById(order.clientId).name
                             }}</strong>
                             <span
-                              class="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500"
+                              class="hidden rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500 sm:inline-flex"
                             >
                               #{{ order.id }}
                             </span>
                           </div>
-                          <p class="mt-1 text-xs text-slate-500">
+                          <p class="mt-0.5 text-[11px] text-slate-500 sm:mt-1 sm:text-xs">
                             Pedido {{ order.createdAt }} · Actualizado {{ order.updatedAt }}
                           </p>
                         </div>
-                        <span class="text-xs font-bold text-slate-500">
-                          {{ order.items.length }} artículos
+                        <span
+                          class="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-500 sm:bg-transparent sm:p-0 sm:text-xs sm:font-bold"
+                        >
+                          {{ order.items.length }} art.
                         </span>
                       </header>
 
                       <div class="divide-y divide-slate-100">
                         @for (item of order.items; track item.id) {
-                          <section class="px-5 py-5">
-                            <div
-                              class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
-                            >
+                          <section class="px-4 py-4 sm:px-5 sm:py-5">
+                            <div class="mb-3 flex items-start justify-between gap-3 sm:mb-4">
                               <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-2">
-                                  <strong class="text-sm">{{
+                                <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                                  <strong class="text-sm leading-snug">{{
                                     supplyById(item.supplyId).name
                                   }}</strong>
                                   <span class="text-xs font-bold text-slate-400">
@@ -169,10 +171,13 @@
                                   >
                                 </div>
                                 @if (item.observation) {
-                                  <p class="mt-1 text-xs italic text-slate-500">
+                                  <p class="mt-1 line-clamp-2 text-xs italic text-slate-500">
                                     {{ item.observation }}
                                   </p>
                                 }
+                                <p class="mt-1 text-[11px] font-medium text-slate-500 sm:hidden">
+                                  {{ dateSummary(item) }}
+                                </p>
                               </div>
                               <span
                                 class="inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-black"
@@ -189,7 +194,7 @@
                               </span>
                             </div>
 
-                            <div class="mb-4 grid grid-cols-4 gap-2">
+                            <div class="mb-4 hidden grid-cols-4 gap-2 sm:grid">
                               @for (step of orderStatusSteps; track step; let index = $index) {
                                 <div class="relative text-center">
                                   @if (index > 0) {
@@ -223,11 +228,11 @@
                               }
                             </div>
 
-                            <div class="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
+                            <div class="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                               <div>
                                 @if (orderAlert(item); as alert) {
                                   <div
-                                    class="flex items-start gap-3 rounded-md border px-3 py-2.5"
+                                    class="flex items-start gap-2 rounded-md border px-3 py-2 sm:gap-3 sm:py-2.5"
                                     [class.border-green-200]="alert.tone === 'green'"
                                     [class.bg-green-50]="alert.tone === 'green'"
                                     [class.text-green-800]="alert.tone === 'green'"
@@ -244,10 +249,16 @@
                                     [class.bg-blue-50]="alert.tone === 'blue'"
                                     [class.text-blue-800]="alert.tone === 'blue'"
                                   >
-                                    <mat-icon class="!text-[19px]">notifications_active</mat-icon>
-                                    <div>
-                                      <strong class="block text-sm">{{ alert.label }}</strong>
-                                      <p class="text-xs opacity-80">{{ alert.message }}</p>
+                                    <mat-icon class="!text-[18px] sm:!text-[19px]"
+                                      >notifications_active</mat-icon
+                                    >
+                                    <div class="min-w-0">
+                                      <strong class="block text-xs sm:text-sm">{{
+                                        alert.label
+                                      }}</strong>
+                                      <p class="line-clamp-2 text-[11px] opacity-80 sm:text-xs">
+                                        {{ alert.message }}
+                                      </p>
                                     </div>
                                   </div>
                                 } @else {
@@ -257,11 +268,11 @@
                                 }
                               </div>
 
-                              <div class="flex items-center justify-end gap-2">
+                              <div class="flex items-center gap-2 sm:justify-end">
                                 @if (actionLabel({ order, item }); as label) {
                                   <button
                                     type="button"
-                                    class="h-10 cursor-pointer rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f]"
+                                    class="h-10 flex-1 cursor-pointer rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f] sm:flex-none"
                                     (click)="openTransition(order.id, item.id)"
                                   >
                                     {{ label }}
@@ -294,9 +305,120 @@
             }
           </div>
         } @else {
-          <article class="overflow-hidden rounded-lg bg-white shadow-sm">
+          <div class="space-y-3 lg:hidden">
+            @for (row of activeRows(); track row.item.id) {
+              <article class="overflow-hidden rounded-lg bg-white shadow-sm">
+                <header
+                  class="flex items-start justify-between gap-3 border-b border-slate-100 p-4"
+                >
+                  <div class="min-w-0 border-l-4 border-[#45658f] pl-3">
+                    <strong class="block truncate text-sm font-black uppercase">
+                      {{ clientById(row.order.clientId).name }}
+                    </strong>
+                    <span class="mt-0.5 block truncate text-[11px] text-slate-500">
+                      {{ clientById(row.order.clientId).locality }}
+                    </span>
+                  </div>
+                  <span
+                    class="shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-black text-blue-700"
+                  >
+                    {{ row.item.status }}
+                  </span>
+                </header>
+
+                <div class="p-4">
+                  <div class="min-w-0">
+                    <strong class="block text-sm leading-snug">
+                      {{ supplyById(row.item.supplyId).name }}
+                    </strong>
+                    <span class="mt-1 block text-[11px] font-bold uppercase text-slate-400">
+                      {{ supplyById(row.item.supplyId).brand }} · x{{ row.item.quantity }}
+                    </span>
+                    <span
+                      class="mt-2 flex items-center gap-1 text-[11px] font-medium text-slate-500"
+                    >
+                      <mat-icon class="!text-[15px]">event</mat-icon>
+                      {{ dateSummary(row.item) }}
+                    </span>
+                  </div>
+
+                  <div class="mt-3 grid grid-cols-2 gap-3 rounded-md bg-slate-50 px-3 py-2 text-xs">
+                    <div class="min-w-0">
+                      <span class="block text-[10px] font-black uppercase text-slate-400">
+                        Vendedor
+                      </span>
+                      <strong class="block truncate">{{
+                        userById(row.order.sellerId).name
+                      }}</strong>
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block text-[10px] font-black uppercase text-slate-400">
+                        Coordinador
+                      </span>
+                      <strong class="block truncate font-medium text-slate-600">
+                        {{ userById(row.order.coordinatorId).name }}
+                      </strong>
+                    </div>
+                  </div>
+
+                  @if (orderAlert(row.item); as alert) {
+                    <div
+                      class="mt-3 flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-bold"
+                      [class.border-green-200]="alert.tone === 'green'"
+                      [class.bg-green-50]="alert.tone === 'green'"
+                      [class.text-green-700]="alert.tone === 'green'"
+                      [class.border-yellow-300]="alert.tone === 'yellow'"
+                      [class.bg-yellow-50]="alert.tone === 'yellow'"
+                      [class.text-yellow-700]="alert.tone === 'yellow'"
+                      [class.border-orange-300]="alert.tone === 'orange'"
+                      [class.bg-orange-50]="alert.tone === 'orange'"
+                      [class.text-orange-700]="alert.tone === 'orange'"
+                      [class.border-red-300]="alert.tone === 'red'"
+                      [class.bg-red-50]="alert.tone === 'red'"
+                      [class.text-red-700]="alert.tone === 'red'"
+                      [class.border-blue-200]="alert.tone === 'blue'"
+                      [class.bg-blue-50]="alert.tone === 'blue'"
+                      [class.text-blue-700]="alert.tone === 'blue'"
+                    >
+                      <mat-icon class="!text-[17px]">notifications_active</mat-icon>
+                      <span class="truncate">{{ alert.label }}</span>
+                    </div>
+                  }
+
+                  <footer class="mt-3 flex items-center gap-2">
+                    @if (actionLabel(row); as label) {
+                      <button
+                        type="button"
+                        class="h-10 flex-1 cursor-pointer rounded-md bg-[#45658f] px-3 text-sm font-bold text-white transition hover:bg-[#31547f]"
+                        (click)="openTransition(row.order.id, row.item.id)"
+                      >
+                        {{ label }}
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md border border-red-200 text-red-600 transition hover:bg-red-50"
+                      title="Eliminar muestra"
+                      aria-label="Eliminar muestra"
+                      (click)="deleteTarget.set({ orderId: row.order.id, itemId: row.item.id })"
+                    >
+                      <mat-icon class="!text-[19px]">delete_outline</mat-icon>
+                    </button>
+                  </footer>
+                </div>
+              </article>
+            } @empty {
+              <div
+                class="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-10 text-center text-slate-500"
+              >
+                No hay muestras activas para los filtros actuales.
+              </div>
+            }
+          </div>
+
+          <article class="hidden overflow-hidden rounded-lg bg-white shadow-sm lg:block">
             <div
-              class="hidden grid-cols-[1.15fr_1.2fr_1.1fr_0.7fr_1fr_190px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase text-slate-500 lg:grid"
+              class="grid grid-cols-[1.15fr_1.2fr_1.1fr_0.7fr_1fr_190px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase text-slate-500"
             >
               <span>Cliente</span>
               <span>Artículo</span>
@@ -308,7 +430,7 @@
 
             @for (row of activeRows(); track row.item.id) {
               <div
-                class="grid gap-4 border-b border-slate-100 px-5 py-5 last:border-b-0 lg:grid-cols-[1.15fr_1.2fr_1.1fr_0.7fr_1fr_190px] lg:items-center"
+                class="grid grid-cols-[1.15fr_1.2fr_1.1fr_0.7fr_1fr_190px] items-center gap-4 border-b border-slate-100 px-5 py-5 last:border-b-0"
               >
                 <div class="border-l-4 border-[#45658f] pl-4">
                   <strong class="block text-sm font-black uppercase">

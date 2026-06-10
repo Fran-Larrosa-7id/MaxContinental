@@ -1,13 +1,17 @@
-<main class="mx-auto w-full max-w-[1320px] px-4 py-7 sm:px-8" data-aos="fade-up">
-  <section class="mb-5 flex items-end justify-between gap-3">
+<main class="mx-auto w-full max-w-[1320px] px-3 py-5 sm:px-8 sm:py-7" data-aos="fade-up">
+  <section class="mb-4 flex items-end justify-between gap-3 sm:mb-5">
     <div>
-      <h2 class="text-2xl font-black">Clientes</h2>
-      <p class="mt-1 text-sm text-slate-500">Seleccione un cliente para iniciar la gestión.</p>
+      <h2 class="text-xl font-black sm:text-2xl">Clientes</h2>
+      <p class="mt-0.5 text-xs text-slate-500 sm:mt-1 sm:text-sm">
+        Seleccione un cliente para iniciar la gestión.
+      </p>
     </div>
-    <span class="text-sm font-medium text-slate-500">{{ filteredClients().length }} clientes</span>
+    <span class="shrink-0 text-xs font-bold text-slate-500 sm:text-sm">
+      {{ filteredClients().length }} clientes
+    </span>
   </section>
 
-  <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
+  <div class="mb-4 rounded-lg bg-white p-3 shadow-sm sm:mb-6 sm:p-4">
     <label class="relative block">
       <mat-icon class="pointer-events-none absolute left-3 top-2.5 !text-[20px] text-slate-400">
         search
@@ -35,26 +39,29 @@
     @for (client of filteredClients(); track client.id) {
       <button
         type="button"
-        class="grid w-full cursor-pointer gap-4 border-b border-slate-100 px-5 py-4 text-left transition last:border-b-0 hover:bg-blue-50 lg:grid-cols-[1.3fr_0.8fr_1fr_0.75fr_32px] lg:items-center"
+        class="flex min-h-16 w-full cursor-pointer items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-blue-50 lg:grid lg:min-h-0 lg:grid-cols-[1.3fr_0.8fr_1fr_0.75fr_32px] lg:gap-4 lg:px-5 lg:py-4"
         [class.bg-blue-50]="activeClientId() === client.id"
         (click)="selectClient(client)"
       >
-        <div class="border-l-4 border-[#45658f] pl-4">
-          <strong class="block text-base font-black uppercase text-[#082653]">{{
-            client.name
-          }}</strong>
+        <div class="min-w-0 flex-1 border-l-4 border-[#45658f] pl-3 lg:pl-4">
+          <strong class="block truncate text-sm font-black uppercase text-[#082653] lg:text-base">
+            {{ client.name }}
+          </strong>
+          <span class="mt-0.5 block truncate text-xs font-medium text-slate-500 lg:hidden">
+            {{ client.locality }}
+          </span>
           @if (activeClientId() === client.id) {
             <small
-              class="mt-1 inline-flex rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700"
+              class="mt-1 hidden rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700 lg:inline-flex"
             >
               Cliente activo
             </small>
           }
         </div>
-        <span class="text-sm text-slate-700">{{ client.locality }}</span>
-        <span class="text-sm text-slate-700">{{ client.address }}</span>
-        <span class="text-sm font-medium text-slate-700">{{ client.phone }}</span>
-        <mat-icon class="text-slate-400">chevron_right</mat-icon>
+        <span class="hidden text-sm text-slate-700 lg:block">{{ client.locality }}</span>
+        <span class="hidden text-sm text-slate-700 lg:block">{{ client.address }}</span>
+        <span class="hidden text-sm font-medium text-slate-700 lg:block">{{ client.phone }}</span>
+        <mat-icon class="shrink-0 !text-[21px] text-slate-400">chevron_right</mat-icon>
       </button>
     } @empty {
       <div class="px-5 py-12 text-center text-slate-500">No se encontraron clientes.</div>

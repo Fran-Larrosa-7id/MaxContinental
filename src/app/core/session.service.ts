@@ -27,7 +27,7 @@ const MOCK_SESSIONS: MockSessionUser[] = [
 })
 export class SessionService {
   readonly availableUsers = MOCK_SESSIONS;
-  readonly currentUser = signal<MockSessionUser>(MOCK_SESSIONS[1]);
+  readonly currentUser = signal<MockSessionUser>(MOCK_SESSIONS[0]);
 
   selectUser(userId: string): void {
     const user = MOCK_SESSIONS.find((item) => item.id === userId);

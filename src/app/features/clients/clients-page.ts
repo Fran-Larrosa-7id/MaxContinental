@@ -39,6 +39,6 @@ export class ClientsPage {
 
   selectClient(client: MockClient): void {
     this.visitContext.start(client);
-    this.router.navigate(['/cli', client.id]);
+    this.router.navigateByUrl('/app/articulos');
   }
 }
