@@ -6,7 +6,7 @@
       @for (tab of tabs; track tab.id) {
         <button
           type="button"
-          class="flex h-11 items-center gap-2 rounded-md px-4 text-sm font-bold shadow-sm transition sm:text-base"
+          class="flex h-11 cursor-pointer items-center gap-2 rounded-md px-4 text-sm font-bold shadow-sm transition sm:text-base"
           [class.bg-[#102a57]]="selectedTab() === tab.id"
           [class.text-white]="selectedTab() === tab.id"
           [class.bg-white]="selectedTab() !== tab.id"
@@ -19,45 +19,67 @@
       }
     </div>
 
-    @if (selectedTab() === 'active') {
-      <button
-        type="button"
-        class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#e62629] px-4 font-bold text-white shadow-md transition hover:bg-[#c91f23] sm:w-auto"
-        (click)="openNewSample()"
-      >
-        <mat-icon class="!text-[20px]">add</mat-icon>
-        Nueva Muestra
-      </button>
-    }
-
-    @if (selectedTab() === 'approvals') {
-      <button
-        type="button"
-        class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#16a34a] px-4 font-bold text-white shadow-md transition hover:bg-[#13833d] sm:w-auto"
-        (click)="openApprovalUpload()"
-      >
-        <mat-icon class="!text-[19px]">upload</mat-icon>
-        Cargar Planilla
-      </button>
-    }
+    <span
+      class="inline-flex w-fit items-center gap-2 rounded-md border border-white/70 bg-white/60 px-3 py-2 text-xs font-black uppercase text-[#203f75]"
+    >
+      <mat-icon class="!text-[18px]">
+        {{ currentUser().role === 'Coordinador' ? 'supervisor_account' : 'badge' }}
+      </mat-icon>
+      Vista {{ currentUser().role }}
+    </span>
   </section>
 
   @switch (selectedTab()) {
     @case ('active') {
       <section class="pt-6">
-        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 class="text-2xl font-black">Pedidos de muestras</h2>
+            <h2 class="text-2xl font-black">Muestras activas</h2>
             <p class="mt-1 text-sm text-slate-500">
-              Seguimiento desde el pedido hasta la entrega al cliente.
+              Cada artículo avanza de forma independiente dentro de su pedido.
             </p>
           </div>
-          <span class="text-sm font-bold text-slate-500"
-            >{{ filteredOrders().length }} pedidos</span
-          >
+
+          <div class="inline-grid grid-cols-2 rounded-md bg-slate-100 p-1 shadow-sm">
+            <button
+              type="button"
+              class="flex h-9 cursor-pointer items-center justify-center gap-2 rounded px-3 text-sm font-bold transition"
+              [class.bg-white]="viewMode() === 'cards'"
+              [class.text-[#203f75]]="viewMode() === 'cards'"
+              [class.shadow-sm]="viewMode() === 'cards'"
+              [class.text-slate-500]="viewMode() !== 'cards'"
+              title="Vista de tarjetas"
+              (click)="viewMode.set('cards')"
+            >
+              <mat-icon class="!text-[18px]">view_module</mat-icon>
+              Cards
+            </button>
+            <button
+              type="button"
+              class="flex h-9 cursor-pointer items-center justify-center gap-2 rounded px-3 text-sm font-bold transition"
+              [class.bg-white]="viewMode() === 'lines'"
+              [class.text-[#203f75]]="viewMode() === 'lines'"
+              [class.shadow-sm]="viewMode() === 'lines'"
+              [class.text-slate-500]="viewMode() !== 'lines'"
+              title="Vista de líneas"
+              (click)="viewMode.set('lines')"
+            >
+              <mat-icon class="!text-[18px]">view_list</mat-icon>
+              Líneas
+            </button>
+          </div>
         </div>
 
-        <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
+        @if (activeClient(); as client) {
+          <div
+            class="mb-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"
+          >
+            <mat-icon class="!text-[19px]">filter_alt</mat-icon>
+            Mostrando muestras de <strong>{{ client.name }}</strong>
+          </div>
+        }
+
+        <div class="mb-6 grid gap-3 rounded-lg bg-white p-4 shadow-sm lg:grid-cols-[1fr_220px]">
           <label class="relative block">
             <mat-icon
               class="pointer-events-none absolute left-3 top-2.5 !text-[20px] text-slate-400"
@@ -66,464 +88,359 @@
             </mat-icon>
             <input
               class="h-10 w-full rounded-md border border-slate-200 pl-10 pr-3 outline-none transition focus:border-[#3e5f8b]"
-              placeholder="Buscar pedido por cliente, vendedor, artículo o estado..."
-              [ngModel]="orderSearchQuery()"
-              (ngModelChange)="orderSearchQuery.set($event)"
+              placeholder="Buscar por cliente, vendedor, artículo o estado..."
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
             />
           </label>
+          <select
+            class="h-10 cursor-pointer rounded-md border border-slate-200 px-3 outline-none focus:border-[#3e5f8b]"
+            [ngModel]="statusFilter()"
+            (ngModelChange)="statusFilter.set($event)"
+          >
+            @for (status of statusOptions; track status) {
+              <option [ngValue]="status">
+                {{ status === 'Todos' ? 'Todos los estados' : status }}
+              </option>
+            }
+          </select>
         </div>
 
-        <div class="space-y-7">
-          @for (group of orderGroups(); track group.seller.id) {
-            <section>
-              <div class="mb-3 flex items-center gap-3">
-                <span
-                  class="flex size-9 items-center justify-center rounded-full bg-[#203f75] font-black text-white"
-                >
-                  {{ group.seller.name.charAt(0) }}
-                </span>
-                <div>
-                  <h3 class="font-black text-[#082653]">{{ group.seller.name }}</h3>
-                  <p class="text-xs text-slate-500">{{ group.orders.length }} pedidos asignados</p>
+        @if (viewMode() === 'cards') {
+          <div class="space-y-7">
+            @for (group of orderGroups(); track group.seller.id) {
+              <section>
+                <div class="mb-3 flex items-center gap-3">
+                  <span
+                    class="flex size-9 items-center justify-center rounded-full bg-[#203f75] font-black text-white"
+                  >
+                    {{ group.seller.name.charAt(0) }}
+                  </span>
+                  <div>
+                    <h3 class="font-black">{{ group.seller.name }}</h3>
+                    <p class="text-xs text-slate-500">
+                      {{ group.orders.length }} pedidos asignados
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div class="space-y-4">
-                @for (order of group.orders; track order.id) {
-                  <article class="overflow-hidden rounded-lg bg-white shadow-sm">
-                    <header
-                      class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div>
-                        <div class="flex flex-wrap items-center gap-2">
-                          <strong class="text-base font-black">{{
-                            clientById(order.clientId).name
-                          }}</strong>
-                          <span
-                            class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600"
-                          >
-                            #{{ order.id }}
-                          </span>
-                        </div>
-                        <p class="mt-1 text-xs text-slate-500">
-                          Creado {{ order.createdAt }} · Actualizado {{ order.updatedAt }}
-                        </p>
-                      </div>
-
-                      <span
-                        class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-black"
-                        [class.bg-blue-100]="order.status === 'Pedido'"
-                        [class.text-blue-700]="order.status === 'Pedido'"
-                        [class.bg-indigo-100]="order.status === 'Enviado'"
-                        [class.text-indigo-700]="order.status === 'Enviado'"
-                        [class.bg-orange-100]="order.status === 'Recibido'"
-                        [class.text-orange-700]="order.status === 'Recibido'"
-                        [class.bg-red-100]="order.status === 'Entregado'"
-                        [class.text-red-700]="order.status === 'Entregado'"
+                <div class="space-y-4">
+                  @for (order of group.orders; track order.id) {
+                    <article class="overflow-hidden rounded-lg bg-white shadow-sm">
+                      <header
+                        class="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        {{ order.status }}
-                      </span>
-                    </header>
-
-                    <div class="px-5 py-5">
-                      <div class="mb-5 grid grid-cols-4 gap-2">
-                        @for (step of orderStatusSteps; track step; let index = $index) {
-                          <div class="relative text-center">
-                            @if (index > 0) {
-                              <span
-                                class="absolute right-1/2 top-3 h-0.5 w-full"
-                                [class.bg-[#45658f]]="statusReached(order, step)"
-                                [class.bg-slate-200]="!statusReached(order, step)"
-                              ></span>
-                            }
+                        <div>
+                          <div class="flex flex-wrap items-center gap-2">
+                            <strong class="font-black">{{
+                              clientById(order.clientId).name
+                            }}</strong>
                             <span
-                              class="relative z-10 mx-auto flex size-6 items-center justify-center rounded-full border-2 text-[10px] font-black"
-                              [class.border-[#45658f]]="statusReached(order, step)"
-                              [class.bg-[#45658f]]="statusReached(order, step)"
-                              [class.text-white]="statusReached(order, step)"
-                              [class.border-slate-300]="!statusReached(order, step)"
-                              [class.bg-white]="!statusReached(order, step)"
-                              [class.text-slate-400]="!statusReached(order, step)"
+                              class="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500"
                             >
-                              @if (statusReached(order, step)) {
-                                <mat-icon class="!size-3.5 !text-sm">check</mat-icon>
-                              } @else {
-                                {{ index + 1 }}
-                              }
-                            </span>
-                            <span
-                              class="mt-1 block text-[10px] font-bold uppercase text-slate-500 sm:text-xs"
-                            >
-                              {{ step }}
+                              #{{ order.id }}
                             </span>
                           </div>
-                        }
-                      </div>
-
-                      <div
-                        class="mb-5 flex items-start gap-3 rounded-lg border p-3"
-                        [class.border-green-200]="orderAlert(order).tone === 'green'"
-                        [class.bg-green-50]="orderAlert(order).tone === 'green'"
-                        [class.text-green-800]="orderAlert(order).tone === 'green'"
-                        [class.border-yellow-300]="orderAlert(order).tone === 'yellow'"
-                        [class.bg-yellow-50]="orderAlert(order).tone === 'yellow'"
-                        [class.text-yellow-800]="orderAlert(order).tone === 'yellow'"
-                        [class.border-orange-300]="orderAlert(order).tone === 'orange'"
-                        [class.bg-orange-50]="orderAlert(order).tone === 'orange'"
-                        [class.text-orange-800]="orderAlert(order).tone === 'orange'"
-                        [class.border-red-300]="orderAlert(order).tone === 'red'"
-                        [class.bg-red-50]="orderAlert(order).tone === 'red'"
-                        [class.text-red-800]="orderAlert(order).tone === 'red'"
-                        [class.border-blue-200]="orderAlert(order).tone === 'blue'"
-                        [class.bg-blue-50]="orderAlert(order).tone === 'blue'"
-                        [class.text-blue-800]="orderAlert(order).tone === 'blue'"
-                      >
-                        <mat-icon class="!text-[20px]">
-                          {{
-                            orderAlert(order).tone === 'green'
-                              ? 'notifications_active'
-                              : orderAlert(order).tone === 'red'
-                                ? 'priority_high'
-                                : 'warning'
-                          }}
-                        </mat-icon>
-                        <div>
-                          <strong class="block text-sm">{{ orderAlert(order).label }}</strong>
-                          <p class="mt-0.5 text-xs opacity-80">{{ orderAlert(order).message }}</p>
+                          <p class="mt-1 text-xs text-slate-500">
+                            Pedido {{ order.createdAt }} · Actualizado {{ order.updatedAt }}
+                          </p>
                         </div>
-                      </div>
+                        <span class="text-xs font-bold text-slate-500">
+                          {{ order.items.length }} artículos
+                        </span>
+                      </header>
 
-                      <div class="grid gap-3 lg:grid-cols-[1fr_auto]">
-                        <div class="space-y-2">
-                          @for (item of order.items; track item.supplyId) {
+                      <div class="divide-y divide-slate-100">
+                        @for (item of order.items; track item.id) {
+                          <section class="px-5 py-5">
                             <div
-                              class="grid gap-2 rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-sm sm:grid-cols-[1fr_auto]"
+                              class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
                             >
-                              <div>
-                                <strong>{{ supplyById(item.supplyId).name }}</strong>
-                                <small class="ml-2 text-slate-400">{{
-                                  supplyById(item.supplyId).brand
-                                }}</small>
+                              <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                  <strong class="text-sm">{{
+                                    supplyById(item.supplyId).name
+                                  }}</strong>
+                                  <span class="text-xs font-bold text-slate-400">
+                                    {{ supplyById(item.supplyId).brand }}
+                                  </span>
+                                  <span class="font-black text-[#203f75]"
+                                    >x{{ item.quantity }}</span
+                                  >
+                                </div>
                                 @if (item.observation) {
                                   <p class="mt-1 text-xs italic text-slate-500">
                                     {{ item.observation }}
                                   </p>
                                 }
                               </div>
-                              <span class="font-black text-[#203f75]">x{{ item.quantity }}</span>
+                              <span
+                                class="inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-black"
+                                [class.bg-blue-100]="item.status === 'Pedido'"
+                                [class.text-blue-700]="item.status === 'Pedido'"
+                                [class.bg-indigo-100]="item.status === 'Enviado'"
+                                [class.text-indigo-700]="item.status === 'Enviado'"
+                                [class.bg-orange-100]="item.status === 'Recibido'"
+                                [class.text-orange-700]="item.status === 'Recibido'"
+                                [class.bg-red-100]="item.status === 'Entregado'"
+                                [class.text-red-700]="item.status === 'Entregado'"
+                              >
+                                {{ item.status }}
+                              </span>
                             </div>
-                          }
-                        </div>
 
-                        <div class="flex min-w-56 flex-col justify-end gap-2">
-                          @if (order.status === 'Pedido') {
-                            <label
-                              class="text-xs font-black uppercase text-slate-500"
-                              [for]="'delivery-' + order.id"
-                            >
-                              Fecha estimada de entrega
-                            </label>
-                            <input
-                              type="date"
-                              class="h-10 rounded-md border border-slate-200 px-3 outline-none focus:border-[#45658f]"
-                              [id]="'delivery-' + order.id"
-                              [ngModel]="estimatedDeliveryValue(order)"
-                              (ngModelChange)="updateEstimatedDelivery(order.id, $event)"
-                            />
-                            <button
-                              type="button"
-                              class="h-10 rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f] disabled:cursor-not-allowed disabled:opacity-50"
-                              [disabled]="!estimatedDeliveryValue(order)"
-                              (click)="markSent(order)"
-                            >
-                              Marcar enviado
-                            </button>
-                          }
-
-                          @if (order.status === 'Enviado') {
-                            <button
-                              type="button"
-                              class="h-10 rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f]"
-                              (click)="markReceived(order)"
-                            >
-                              Marcar recibido
-                            </button>
-                          }
-
-                          @if (order.status === 'Recibido') {
-                            <button
-                              type="button"
-                              class="h-10 rounded-md bg-[#e97815] px-4 text-sm font-bold text-white transition hover:bg-[#c8610e]"
-                              (click)="markDelivered(order)"
-                            >
-                              Marcar entregado
-                            </button>
-                          }
-
-                          @if (order.status === 'Entregado') {
-                            <div
-                              class="rounded-md bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700"
-                            >
-                              Fase de seguimiento activa
+                            <div class="mb-4 grid grid-cols-4 gap-2">
+                              @for (step of orderStatusSteps; track step; let index = $index) {
+                                <div class="relative text-center">
+                                  @if (index > 0) {
+                                    <span
+                                      class="absolute right-1/2 top-3 h-0.5 w-full"
+                                      [class.bg-[#45658f]]="statusReached(item, step)"
+                                      [class.bg-slate-200]="!statusReached(item, step)"
+                                    ></span>
+                                  }
+                                  <span
+                                    class="relative z-10 mx-auto flex size-6 items-center justify-center rounded-full border-2 text-[10px] font-black"
+                                    [class.border-[#45658f]]="statusReached(item, step)"
+                                    [class.bg-[#45658f]]="statusReached(item, step)"
+                                    [class.text-white]="statusReached(item, step)"
+                                    [class.border-slate-300]="!statusReached(item, step)"
+                                    [class.bg-white]="!statusReached(item, step)"
+                                    [class.text-slate-400]="!statusReached(item, step)"
+                                  >
+                                    @if (statusReached(item, step)) {
+                                      <mat-icon class="!size-3.5 !text-sm">check</mat-icon>
+                                    } @else {
+                                      {{ index + 1 }}
+                                    }
+                                  </span>
+                                  <span
+                                    class="mt-1 block text-[10px] font-bold uppercase text-slate-500"
+                                  >
+                                    {{ step }}
+                                  </span>
+                                </div>
+                              }
                             </div>
-                          }
-                        </div>
+
+                            <div class="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
+                              <div>
+                                @if (orderAlert(item); as alert) {
+                                  <div
+                                    class="flex items-start gap-3 rounded-md border px-3 py-2.5"
+                                    [class.border-green-200]="alert.tone === 'green'"
+                                    [class.bg-green-50]="alert.tone === 'green'"
+                                    [class.text-green-800]="alert.tone === 'green'"
+                                    [class.border-yellow-300]="alert.tone === 'yellow'"
+                                    [class.bg-yellow-50]="alert.tone === 'yellow'"
+                                    [class.text-yellow-800]="alert.tone === 'yellow'"
+                                    [class.border-orange-300]="alert.tone === 'orange'"
+                                    [class.bg-orange-50]="alert.tone === 'orange'"
+                                    [class.text-orange-800]="alert.tone === 'orange'"
+                                    [class.border-red-300]="alert.tone === 'red'"
+                                    [class.bg-red-50]="alert.tone === 'red'"
+                                    [class.text-red-800]="alert.tone === 'red'"
+                                    [class.border-blue-200]="alert.tone === 'blue'"
+                                    [class.bg-blue-50]="alert.tone === 'blue'"
+                                    [class.text-blue-800]="alert.tone === 'blue'"
+                                  >
+                                    <mat-icon class="!text-[19px]">notifications_active</mat-icon>
+                                    <div>
+                                      <strong class="block text-sm">{{ alert.label }}</strong>
+                                      <p class="text-xs opacity-80">{{ alert.message }}</p>
+                                    </div>
+                                  </div>
+                                } @else {
+                                  <p class="text-xs font-medium text-slate-500">
+                                    {{ dateSummary(item) }}
+                                  </p>
+                                }
+                              </div>
+
+                              <div class="flex items-center justify-end gap-2">
+                                @if (actionLabel({ order, item }); as label) {
+                                  <button
+                                    type="button"
+                                    class="h-10 cursor-pointer rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f]"
+                                    (click)="openTransition(order.id, item.id)"
+                                  >
+                                    {{ label }}
+                                  </button>
+                                }
+                                <button
+                                  type="button"
+                                  class="flex size-10 cursor-pointer items-center justify-center rounded-md border border-red-200 text-red-600 transition hover:bg-red-50"
+                                  title="Eliminar muestra"
+                                  aria-label="Eliminar muestra"
+                                  (click)="deleteTarget.set({ orderId: order.id, itemId: item.id })"
+                                >
+                                  <mat-icon class="!text-[20px]">delete_outline</mat-icon>
+                                </button>
+                              </div>
+                            </div>
+                          </section>
+                        }
                       </div>
-                    </div>
-                  </article>
-                }
+                    </article>
+                  }
+                </div>
+              </section>
+            } @empty {
+              <div
+                class="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-slate-500"
+              >
+                No hay muestras activas para los filtros actuales.
               </div>
-            </section>
-          } @empty {
-            <div
-              class="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-slate-500"
-            >
-              No hay pedidos de muestras para los filtros actuales.
-            </div>
-          }
-        </div>
-
-        <div class="my-9 border-t border-white/70"></div>
-
-        <h2 class="mb-5 text-2xl font-black">Muestras individuales</h2>
-        @if (activeClient(); as client) {
-          <div
-            class="mb-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"
-          >
-            <mat-icon class="!text-[19px]">filter_alt</mat-icon>
-            Mostrando únicamente las muestras de <strong>{{ client.name }}</strong
-            >.
-          </div>
-        }
-        <div class="mb-6 grid gap-3 rounded-lg bg-white p-4 shadow-sm lg:grid-cols-[1fr_220px]">
-          <input
-            class="h-10 rounded-md border border-slate-100 px-3 text-base outline-none focus:border-[#3e5f8b]"
-            placeholder="Buscar por insumo, cliente o ciudad..."
-            [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
-          />
-          <select
-            class="h-10 rounded-md border border-slate-100 px-3 outline-none focus:border-[#3e5f8b]"
-            [ngModel]="statusFilter()"
-            (ngModelChange)="statusFilter.set($event)"
-          >
-            @for (status of statuses; track status) {
-              <option>{{ status }}</option>
             }
-          </select>
-        </div>
-
-        @if (selectedCount() > 0) {
-          <div
-            class="mc-selection-alert mb-4 flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-red-700 shadow-sm sm:flex-row sm:items-center sm:justify-between"
-          >
-            <p class="flex items-center gap-2 text-sm font-bold">
-              <mat-icon class="!text-[20px] text-yellow-500">warning</mat-icon>
-              Seleccionado: {{ selectedCount() }} muestra activa para eliminar
-            </p>
-            <button
-              type="button"
-              class="h-9 rounded-md bg-[#e62629] px-4 text-sm font-bold text-white transition hover:bg-[#c91f23]"
-              (click)="openDeleteSelected()"
-            >
-              Eliminar seleccionadas
-            </button>
           </div>
+        } @else {
+          <article class="overflow-hidden rounded-lg bg-white shadow-sm">
+            <div
+              class="hidden grid-cols-[1.15fr_1.2fr_1.1fr_0.7fr_1fr_190px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase text-slate-500 lg:grid"
+            >
+              <span>Cliente</span>
+              <span>Artículo</span>
+              <span>Vendedor / Coord.</span>
+              <span>Estado</span>
+              <span>Fecha / seguimiento</span>
+              <span class="text-right">Acción</span>
+            </div>
+
+            @for (row of activeRows(); track row.item.id) {
+              <div
+                class="grid gap-4 border-b border-slate-100 px-5 py-5 last:border-b-0 lg:grid-cols-[1.15fr_1.2fr_1.1fr_0.7fr_1fr_190px] lg:items-center"
+              >
+                <div class="border-l-4 border-[#45658f] pl-4">
+                  <strong class="block text-sm font-black uppercase">
+                    {{ clientById(row.order.clientId).name }}
+                  </strong>
+                  <small class="text-slate-500">{{
+                    clientById(row.order.clientId).locality
+                  }}</small>
+                </div>
+                <div>
+                  <strong class="block text-sm">{{ supplyById(row.item.supplyId).name }}</strong>
+                  <small class="text-slate-500">
+                    {{ supplyById(row.item.supplyId).brand }} · x{{ row.item.quantity }}
+                  </small>
+                </div>
+                <div>
+                  <strong class="block text-sm">{{ userById(row.order.sellerId).name }}</strong>
+                  <small class="text-slate-400">
+                    Coord: {{ userById(row.order.coordinatorId).name }}
+                  </small>
+                </div>
+                <span
+                  class="w-fit rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700"
+                >
+                  {{ row.item.status }}
+                </span>
+                <div>
+                  <span class="text-sm text-slate-600">{{ dateSummary(row.item) }}</span>
+                  @if (orderAlert(row.item); as alert) {
+                    <small
+                      class="mt-1 block font-bold"
+                      [class.text-green-700]="alert.tone === 'green'"
+                      [class.text-yellow-700]="alert.tone === 'yellow'"
+                      [class.text-orange-700]="alert.tone === 'orange'"
+                      [class.text-red-700]="alert.tone === 'red'"
+                      [class.text-blue-700]="alert.tone === 'blue'"
+                    >
+                      {{ alert.label }}
+                    </small>
+                  }
+                </div>
+                <div class="flex items-center justify-end gap-2">
+                  @if (actionLabel(row); as label) {
+                    <button
+                      type="button"
+                      class="h-9 cursor-pointer rounded-md bg-[#45658f] px-3 text-xs font-bold text-white transition hover:bg-[#31547f]"
+                      (click)="openTransition(row.order.id, row.item.id)"
+                    >
+                      {{ label }}
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="flex size-9 cursor-pointer items-center justify-center rounded-md border border-red-200 text-red-600 transition hover:bg-red-50"
+                    title="Eliminar muestra"
+                    aria-label="Eliminar muestra"
+                    (click)="deleteTarget.set({ orderId: row.order.id, itemId: row.item.id })"
+                  >
+                    <mat-icon class="!text-[19px]">delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            } @empty {
+              <div class="px-5 py-12 text-center text-slate-500">
+                No hay muestras activas para los filtros actuales.
+              </div>
+            }
+          </article>
         }
-
-        <article class="overflow-hidden rounded-lg bg-white shadow-sm">
-          <div
-            class="hidden grid-cols-[56px_1fr_1fr_1.2fr_1fr_1.2fr_84px] border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 md:grid"
-          >
-            <span>
-              <input
-                type="checkbox"
-                class="size-4 accent-[#d61aa0]"
-                aria-label="Seleccionar todas"
-                [checked]="allFilteredSelected()"
-                (change)="toggleAllActive($any($event.target).checked)"
-              />
-            </span>
-            <span>Cliente</span>
-            <span>Insumo</span>
-            <span>Vendedor / Coord.</span>
-            <span>Estado</span>
-            <span>Proximo Seguimiento</span>
-            <span>Accion</span>
-          </div>
-
-          @for (sample of filteredActiveSamples(); track sample.id) {
-            <div
-              class="grid gap-4 border-b border-slate-100 px-4 py-4 last:border-b-0 md:grid-cols-[56px_1fr_1fr_1.2fr_1fr_1.2fr_120px] md:items-center"
-              [class.bg-red-50]="isSelected(sample.id)"
-            >
-              <div class="flex items-center justify-between md:block">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden"
-                  >Seleccionar</span
-                >
-                <input
-                  type="checkbox"
-                  class="size-4 accent-[#d61aa0]"
-                  [checked]="isSelected(sample.id)"
-                  (change)="toggleSampleSelection(sample.id, $any($event.target).checked)"
-                />
-              </div>
-
-              <div class="border-l-4 border-[#45658f] pl-4 md:min-h-14">
-                <span
-                  class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden"
-                  >Cliente</span
-                >
-                <strong class="block text-base font-black uppercase text-[#082653]">
-                  {{ clientById(sample.clientId).name }}
-                </strong>
-                <small class="block uppercase text-slate-500">{{
-                  clientById(sample.clientId).locality
-                }}</small>
-              </div>
-
-              <div>
-                <span
-                  class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden"
-                  >Insumo</span
-                >
-                <span class="text-sm font-medium text-slate-700">{{
-                  supplyById(sample.supplyId).name
-                }}</span>
-                <small class="block text-slate-500">{{ supplyById(sample.supplyId).brand }}</small>
-              </div>
-
-              <div>
-                <span
-                  class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden"
-                >
-                  Vendedor / Coord.
-                </span>
-                <strong class="block text-sm text-[#082653]">{{
-                  userById(sample.sellerId).name
-                }}</strong>
-                <small class="block text-slate-400"
-                  >Coordinador: {{ userById(sample.coordinatorId).name }}</small
-                >
-              </div>
-
-              <div>
-                <span
-                  class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden"
-                  >Estado</span
-                >
-                <span class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
-                  {{ sample.status }}
-                </span>
-              </div>
-
-              <div>
-                <span
-                  class="block text-xs font-bold uppercase tracking-wider text-slate-400 md:hidden"
-                >
-                  Proximo Seguimiento
-                </span>
-                <span class="text-sm text-slate-600" [class.italic]="!sample.nextFollowUp">
-                  {{ sample.nextFollowUp || 'No planificado' }}
-                </span>
-                <small class="mt-1 block text-slate-400 md:hidden"
-                  >Actualizado: {{ sample.updatedAt }}</small
-                >
-              </div>
-
-              <div class="flex gap-3 md:justify-end">
-                <button
-                  type="button"
-                  class="text-sm font-bold text-[#203f75] transition hover:text-[#102a57]"
-                  (click)="openEditSample(sample.id)"
-                >
-                  Actualizar
-                </button>
-                <button
-                  type="button"
-                  class="text-sm font-bold text-[#e62629] transition hover:text-[#b91c1c]"
-                  (click)="openDeleteSample(sample.id)"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          } @empty {
-            <div
-              class="flex min-h-22 items-center justify-center px-4 py-9 text-center text-slate-500"
-            >
-              No se encontraron muestras activas con los filtros actuales.
-            </div>
-          }
-        </article>
       </section>
     }
 
     @case ('resolved') {
       <section class="pt-6">
-        <h2 class="mb-5 text-2xl font-black">Muestras Resueltas</h2>
-        <div
-          class="mb-6 grid gap-3 rounded-lg bg-white p-4 shadow-sm xl:grid-cols-[1fr_auto_220px]"
-        >
-          <input
-            class="h-10 rounded-md border border-slate-100 px-3 text-base outline-none focus:border-[#3e5f8b]"
-            placeholder="Buscar por insumo, cliente o ciudad..."
-          />
+        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-2xl font-black">Muestras resueltas</h2>
+            <p class="mt-1 text-sm text-slate-500">Resultados y feedback del cliente.</p>
+          </div>
           <div class="grid grid-cols-2 rounded-md bg-slate-100 p-1">
-            @for (filter of resolutionFilters; track filter.id) {
-              <button
-                type="button"
-                class="h-8 rounded px-3 text-xs font-bold transition"
-                [class.bg-[#16a34a]]="resolutionFilter() === filter.id && filter.id === 'approved'"
-                [class.bg-[#e62629]]="resolutionFilter() === filter.id && filter.id === 'rejected'"
-                [class.text-white]="resolutionFilter() === filter.id"
-                [class.text-slate-500]="resolutionFilter() !== filter.id"
-                (click)="resolutionFilter.set(filter.id)"
-              >
-                {{ filter.label }}
-              </button>
-            }
+            <button
+              type="button"
+              class="h-9 cursor-pointer rounded px-4 text-sm font-bold"
+              [class.bg-green-600]="resolutionFilter() === 'approved'"
+              [class.text-white]="resolutionFilter() === 'approved'"
+              (click)="resolutionFilter.set('approved')"
+            >
+              Aprobadas
+            </button>
+            <button
+              type="button"
+              class="h-9 cursor-pointer rounded px-4 text-sm font-bold"
+              [class.bg-red-600]="resolutionFilter() === 'rejected'"
+              [class.text-white]="resolutionFilter() === 'rejected'"
+              (click)="resolutionFilter.set('rejected')"
+            >
+              Rechazadas
+            </button>
           </div>
-          <select
-            class="h-10 rounded-md border border-slate-100 px-3 outline-none focus:border-[#3e5f8b]"
-            [value]="statusFilter()"
-            (change)="statusFilter.set($any($event.target).value)"
-          >
-            @for (status of statuses; track status) {
-              <option>{{ status }}</option>
-            }
-          </select>
         </div>
+
         <article class="overflow-hidden rounded-lg bg-white shadow-sm">
-          <div
-            class="hidden grid-cols-[1fr_1fr_1fr_1fr_1.2fr_80px] border-b border-slate-200 bg-slate-50 px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 md:grid"
-          >
-            <span>Cliente</span>
-            <span>Insumo</span>
-            <span>Vendedor</span>
-            <span>Estado Final</span>
-            <span>Fecha Actualizacion</span>
-            <span>Accion</span>
-          </div>
-          <div
-            class="flex min-h-22 items-center justify-center px-4 py-9 text-center text-slate-500"
-          >
-            {{ emptyMessage() }}
-          </div>
+          @for (row of resolvedRows(); track row.item.id) {
+            <div
+              class="grid gap-3 border-b border-slate-100 px-5 py-4 last:border-b-0 md:grid-cols-[1fr_1fr_0.6fr_1.3fr] md:items-center"
+            >
+              <strong>{{ clientById(row.order.clientId).name }}</strong>
+              <span>{{ supplyById(row.item.supplyId).name }}</span>
+              <span class="font-bold">{{ row.item.status }}</span>
+              <p class="text-sm text-slate-500">
+                {{ row.item.feedback || 'Sin feedback cargado.' }}
+              </p>
+            </div>
+          } @empty {
+            <div class="px-5 py-12 text-center text-slate-500">
+              No hay muestras {{ resolutionFilter() === 'approved' ? 'aprobadas' : 'rechazadas' }}.
+            </div>
+          }
         </article>
       </section>
     }
 
     @case ('approvals') {
       <section class="pt-6">
-        <h2 class="mb-5 text-2xl font-black">Planillas Cargadas</h2>
+        <h2 class="mb-5 text-2xl font-black">Planillas cargadas</h2>
         <button
           type="button"
-          class="flex min-h-52 w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm transition hover:border-[#3e5f8b] hover:bg-slate-50"
-          (click)="openApprovalUpload()"
+          class="flex min-h-52 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm transition hover:border-[#3e5f8b] hover:bg-slate-50"
+          (click)="isApprovalUploadOpen.set(true)"
         >
           <mat-icon class="!size-12 !text-5xl text-slate-300">verified</mat-icon>
-          <span class="text-slate-500">No hay planillas de aprobacion cargadas.</span>
+          <span class="text-slate-500">No hay planillas de aprobación cargadas.</span>
           <strong class="text-[#203f75]">Cargar la primera</strong>
         </button>
       </section>
@@ -531,70 +448,70 @@
   }
 </main>
 
-@if (isNewSampleOpen()) {
+@if (selectedTransition(); as row) {
   <div
     class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
-    (click)="closeDialogs()"
+    (click)="transitionTarget.set(null)"
   >
-    <app-new-sample-dialog
-      class="mc-dialog w-full max-w-xl"
-      [clients]="clients"
-      [supplies]="supplies"
-      [sellers]="sellers()"
-      (created)="createSamples($event)"
-      (closed)="closeDialogs()"
-      (click)="$event.stopPropagation()"
-    />
-  </div>
-}
-
-@if (editingSample(); as sample) {
-  <div
-    class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
-    (click)="closeDialogs()"
-  >
-    <app-edit-sample-dialog
-      class="mc-dialog w-full max-w-xl"
-      [sample]="sample"
-      [users]="users"
-      [statuses]="statuses"
-      [client]="clientById(sample.clientId)"
-      [supply]="supplyById(sample.supplyId)"
-      [seller]="userById(sample.sellerId)"
-      [coordinator]="userById(sample.coordinatorId)"
-      (saved)="updateSample($event)"
-      (deleteRequested)="openDeleteSample($event)"
-      (closed)="closeDialogs()"
-      (click)="$event.stopPropagation()"
-    />
-  </div>
-}
-
-@if (deleteTargetSamples().length > 0) {
-  <div
-    class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
-    (click)="closeDialogs()"
-  >
-    <app-confirm-delete-dialog
+    <app-sample-transition-dialog
       class="mc-dialog w-full max-w-md"
-      [samples]="deleteTargetSamples()"
-      [clients]="clients"
-      [supplies]="supplies"
-      (confirmed)="confirmDelete()"
-      (closed)="closeDialogs()"
+      [item]="row.item"
+      [supply]="supplyById(row.item.supplyId)"
+      (confirmed)="confirmTransition($event)"
+      (closed)="transitionTarget.set(null)"
       (click)="$event.stopPropagation()"
     />
+  </div>
+}
+
+@if (selectedDelete(); as row) {
+  <div
+    class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
+    (click)="deleteTarget.set(null)"
+  >
+    <section
+      class="mc-dialog w-full max-w-md overflow-hidden rounded-lg bg-white text-[#082653] shadow-2xl"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="px-5 py-5">
+        <span
+          class="mb-3 flex size-10 items-center justify-center rounded-full bg-red-50 text-red-600"
+        >
+          <mat-icon>delete_outline</mat-icon>
+        </span>
+        <h2 class="text-lg font-black">Eliminar muestra</h2>
+        <p class="mt-2 text-sm text-slate-500">
+          Se eliminará {{ supplyById(row.item.supplyId).name }} del pedido #{{ row.order.id }}.
+        </p>
+      </div>
+      <footer class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4">
+        <button
+          type="button"
+          class="h-10 cursor-pointer rounded-md border border-slate-300 px-4 text-sm font-bold text-slate-600"
+          (click)="deleteTarget.set(null)"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="h-10 cursor-pointer rounded-md bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-700"
+          (click)="confirmDelete()"
+        >
+          Eliminar
+        </button>
+      </footer>
+    </section>
   </div>
 }
 
 @if (isApprovalUploadOpen()) {
   <div
     class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
-    (click)="closeDialogs()"
+    (click)="isApprovalUploadOpen.set(false)"
   >
     <app-upload-approval-dialog
       class="mc-dialog w-full max-w-lg"
-      (closed)="closeDialogs()"
+      (closed)="isApprovalUploadOpen.set(false)"
       (click)="$event.stopPropagation()"
     />
   </div>

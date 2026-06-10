@@ -9,6 +9,8 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { filter } from 'rxjs';
+import { SessionService } from '../core/session.service';
+import { SampleOrdersService } from '../core/sample-orders.service';
 import { VisitContextService } from '../core/visit-context.service';
 
 type NavItem = {
@@ -25,6 +27,8 @@ type NavItem = {
 })
 export class AppShell {
   private readonly visitContext = inject(VisitContextService);
+  private readonly session = inject(SessionService);
+  private readonly ordersService = inject(SampleOrdersService);
 
   readonly navItems: NavItem[] = [
     { label: 'Clientes', mobileLabel: 'Clientes', icon: 'groups', path: '/app/clientes' },
@@ -40,6 +44,8 @@ export class AppShell {
 
   readonly routeTitle = signal('Clientes');
   readonly activeClient = this.visitContext.activeClient;
+  readonly currentUser = this.session.currentUser;
+  readonly availableUsers = this.session.availableUsers;
   readonly pageTitle = computed(() => {
     const client = this.activeClient();
     return client ? `Visitando: ${client.name}` : this.routeTitle();
@@ -68,6 +74,13 @@ export class AppShell {
     if (isClientRoute) {
       this.router.navigateByUrl('/app/clientes');
     }
+  }
+
+  changeSession(userId: string): void {
+    this.visitContext.finish();
+    this.ordersService.clearCart();
+    this.session.selectUser(userId);
+    this.router.navigateByUrl('/app/clientes');
   }
 
   logout(): void {

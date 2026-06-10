@@ -31,13 +31,25 @@
         <span
           class="flex size-9 items-center justify-center rounded-full bg-[#a7cbe7] font-black text-[#14315d]"
         >
-          A
+          {{ currentUser().name.charAt(0) }}
         </span>
         <span>
-          <strong class="block text-sm">Arnaldo Parra</strong>
-          <small class="block text-[#a7d0ff]">Jefe de ventas</small>
+          <strong class="block text-sm">{{ currentUser().name }}</strong>
+          <small class="block text-[#a7d0ff]">{{ currentUser().role }}</small>
         </span>
       </div>
+      <label class="mb-3 block">
+        <span class="sr-only">Cambiar rol de prueba</span>
+        <select
+          class="h-9 w-full cursor-pointer rounded-md border border-white/20 bg-[#192f56] px-2 text-xs font-bold text-white outline-none"
+          [value]="currentUser().id"
+          (change)="changeSession($any($event.target).value)"
+        >
+          @for (user of availableUsers; track user.id) {
+            <option [value]="user.id">{{ user.role }} · {{ user.name }}</option>
+          }
+        </select>
+      </label>
       <button
         type="button"
         class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#e62629] px-3 text-sm font-bold text-white transition hover:bg-[#c91f23]"

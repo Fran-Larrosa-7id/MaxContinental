@@ -25,6 +25,7 @@ export type MockClient = {
   locality: string;
   address: string;
   phone: string;
+  sellerId: string;
 };
 
 export type MockSupply = {

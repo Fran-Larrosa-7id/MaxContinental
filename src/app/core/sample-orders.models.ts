@@ -1,4 +1,12 @@
-export type SampleOrderStatus = 'Pedido' | 'Enviado' | 'Recibido' | 'Entregado';
+export type SampleOrderStatus =
+  | 'Pedido'
+  | 'Enviado'
+  | 'Recibido'
+  | 'Entregado'
+  | 'Aprobada'
+  | 'Rechazada';
+
+export type AppRole = 'Vendedor' | 'Coordinador';
 
 export type SampleCartItem = {
   supplyId: string;
@@ -14,21 +22,38 @@ export type SampleOrderEvent = {
   note: string;
 };
 
+export type SampleOrderItem = SampleCartItem & {
+  id: string;
+  status: SampleOrderStatus;
+  requestedAt: string;
+  sentAt: string | null;
+  estimatedReception: string | null;
+  receivedAt: string | null;
+  estimatedDelivery: string | null;
+  deliveredAt: string | null;
+  followUpAt: string | null;
+  feedback: string;
+  history: SampleOrderEvent[];
+};
+
 export type SampleOrder = {
   id: string;
   clientId: string;
   sellerId: string;
   coordinatorId: string;
-  status: SampleOrderStatus;
-  estimatedDelivery: string | null;
   createdAt: string;
   updatedAt: string;
-  items: SampleCartItem[];
-  history: SampleOrderEvent[];
+  items: SampleOrderItem[];
 };
 
 export type SampleOrderAlert = {
   tone: 'green' | 'yellow' | 'orange' | 'red' | 'blue';
   label: string;
   message: string;
+};
+
+export type SampleTransitionPayload = {
+  estimatedDate?: string;
+  observation?: string;
+  resolution?: 'Aprobada' | 'Rechazada' | 'Mas plazo';
 };

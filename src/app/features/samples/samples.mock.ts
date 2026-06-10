@@ -25,6 +25,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'CIUDAD DE BUENO',
     address: 'Solís 385, CABA',
     phone: '+54 11 4381-1200',
+    sellerId: 'user-cristian',
   },
   {
     id: 'client-2',
@@ -32,6 +33,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'C.A.B.A.',
     address: 'Av. Belgrano 1820, CABA',
     phone: '+54 11 4378-2240',
+    sellerId: 'user-cristian',
   },
   {
     id: 'client-3',
@@ -39,6 +41,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'CAMPANA',
     address: 'Alberdi 576, Campana',
     phone: '+54 3489 40-7200',
+    sellerId: 'user-luis',
   },
   {
     id: 'client-4',
@@ -46,6 +49,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'CARMEN DE PATAGONES',
     address: 'Dr. Baraja 740, Carmen de Patagones',
     phone: '+54 2920 46-2100',
+    sellerId: 'user-luis',
   },
   {
     id: 'client-5',
@@ -53,6 +57,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'BAHIA BLANCA',
     address: 'Estomba 571, Bahía Blanca',
     phone: '+54 291 459-5555',
+    sellerId: 'user-rodrigo',
   },
   {
     id: 'client-6',
@@ -60,6 +65,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'CAMPANA',
     address: 'Rawson 327, Campana',
     phone: '+54 3489 42-3100',
+    sellerId: 'user-rodrigo',
   },
   {
     id: 'client-7',
@@ -67,6 +73,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'VIEDMA',
     address: '25 de Mayo 174, Viedma',
     phone: '+54 2920 42-1800',
+    sellerId: 'user-cristian',
   },
   {
     id: 'client-8',
@@ -74,6 +81,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'BAHIA BLANCA',
     address: 'Lainez 2401, Bahía Blanca',
     phone: '+54 291 481-1510',
+    sellerId: 'user-luis',
   },
   {
     id: 'client-9',
@@ -81,6 +89,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'BAHIA BLANCA',
     address: 'Necochea 675, Bahía Blanca',
     phone: '+54 291 458-3100',
+    sellerId: 'user-rodrigo',
   },
   {
     id: 'client-10',
@@ -88,6 +97,7 @@ export const MOCK_CLIENTS: MockClient[] = [
     locality: 'VIEDMA',
     address: 'Álvaro Barros 1150, Viedma',
     phone: '+54 2920 43-5500',
+    sellerId: 'user-cristian',
   },
 ];
 
@@ -192,16 +202,13 @@ export const MOCK_CLIENT_SUPPLY_IDS: Record<string, string[]> = {
 };
 
 export const MOCK_USERS: MockUser[] = [
-  { id: 'user-admin', name: 'Admin', role: 'Admin' },
   { id: 'user-arnaldo', name: 'Arnaldo Parra', role: 'Jefe de Ventas' },
-  { id: 'user-manuel', name: 'Manuel Albizu', role: 'Team Leader' },
   { id: 'user-ignacio', name: 'Ignacio Prevostini', role: 'Team Leader' },
-  { id: 'user-pablo', name: 'Pablo Lagoria (V)', role: 'Vendedor', isSeller: true },
-  { id: 'user-cristian', name: 'Cristian Bohn (V)', role: 'Vendedor', isSeller: true },
-  { id: 'user-nicolas', name: 'Nicolas Boschetto (V)', role: 'Vendedor', isSeller: true },
-  { id: 'user-sur', name: 'Sur (V)', role: 'Vendedor', isSeller: true },
+  { id: 'user-cristian', name: 'Cristian Bohn', role: 'Vendedor', isSeller: true },
+  { id: 'user-luis', name: 'Luis Benedicti', role: 'Vendedor', isSeller: true },
+  { id: 'user-rodrigo', name: 'Rodrigo Amicone', role: 'Vendedor', isSeller: true },
   { id: 'user-coord-cristian', name: 'Cristian Molina', role: 'Coordinador' },
-  { id: 'user-subcoord', name: 'Subcoordinacion', role: 'Subcoordinacion' },
+  { id: 'user-coord-marisol', name: 'Marisol Pugliese', role: 'Coordinador' },
 ];
 
 export const MOCK_SAMPLES: Sample[] = [

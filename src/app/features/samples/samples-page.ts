@@ -1,316 +1,188 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { SampleOrder, SampleOrderStatus } from '../../core/sample-orders.models';
+import {
+  SampleOrder,
+  SampleOrderAlert,
+  SampleOrderItem,
+  SampleOrderStatus,
+  SampleTransitionPayload,
+} from '../../core/sample-orders.models';
 import { SampleOrdersService } from '../../core/sample-orders.service';
+import { SessionService } from '../../core/session.service';
 import { VisitContextService } from '../../core/visit-context.service';
-import { ConfirmDeleteDialog } from '../../shared/dialogs/confirm-delete-dialog';
-import { EditSampleDialog } from '../../shared/dialogs/edit-sample-dialog';
-import { NewSampleDialog } from '../../shared/dialogs/new-sample-dialog';
+import { SampleTransitionDialog } from '../../shared/dialogs/sample-transition-dialog';
 import { UploadApprovalDialog } from '../../shared/dialogs/upload-approval-dialog';
-import {
-  MOCK_CLIENTS,
-  MOCK_SAMPLES,
-  MOCK_SUPPLIES,
-  MOCK_USERS,
-  STATUS_FILTERS,
-} from './samples.mock';
-import {
-  CreateSamplePayload,
-  MockClient,
-  MockSupply,
-  MockUser,
-  ResolutionFilter,
-  Sample,
-  SampleStatus,
-  SampleTab,
-  StatusFilter,
-  UpdateSamplePayload,
-} from './samples.types';
+import { MOCK_CLIENTS, MOCK_SUPPLIES, MOCK_USERS } from './samples.mock';
+import { MockClient, MockSupply, MockUser, ResolutionFilter, SampleTab } from './samples.types';
+
+type ViewMode = 'cards' | 'lines';
+type OrderItemRow = {
+  order: SampleOrder;
+  item: SampleOrderItem;
+};
 
 @Component({
   selector: 'app-samples-page',
-  imports: [
-    FormsModule,
-    MatIconModule,
-    NewSampleDialog,
-    EditSampleDialog,
-    ConfirmDeleteDialog,
-    UploadApprovalDialog,
-  ],
+  imports: [FormsModule, MatIconModule, SampleTransitionDialog, UploadApprovalDialog],
   templateUrl: './samples-page.html',
 })
 export class SamplesPage {
   private readonly visitContext = inject(VisitContextService);
   private readonly ordersService = inject(SampleOrdersService);
+  private readonly session = inject(SessionService);
 
   readonly selectedTab = signal<SampleTab>('active');
   readonly resolutionFilter = signal<ResolutionFilter>('approved');
-  readonly statusFilter = signal<StatusFilter>('Todos los estados');
+  readonly viewMode = signal<ViewMode>('cards');
   readonly searchQuery = signal('');
-  readonly samples = signal<Sample[]>(MOCK_SAMPLES);
-  readonly selectedSampleIds = signal<string[]>([]);
-  readonly isNewSampleOpen = signal(false);
+  readonly statusFilter = signal<'Todos' | SampleOrderStatus>('Todos');
+  readonly transitionTarget = signal<{ orderId: string; itemId: string } | null>(null);
+  readonly deleteTarget = signal<{ orderId: string; itemId: string } | null>(null);
   readonly isApprovalUploadOpen = signal(false);
-  readonly editingSampleId = signal<string | null>(null);
-  readonly deleteTargetIds = signal<string[]>([]);
-  readonly orderSearchQuery = signal('');
-  readonly estimatedDeliveryDrafts = signal<Record<string, string>>({});
 
   readonly clients = MOCK_CLIENTS;
   readonly supplies = MOCK_SUPPLIES;
   readonly users = MOCK_USERS;
-  readonly statuses = STATUS_FILTERS;
+  readonly currentUser = this.session.currentUser;
   readonly activeClient = this.visitContext.activeClient;
-  readonly orders = this.ordersService.orders;
   readonly orderStatusSteps: SampleOrderStatus[] = ['Pedido', 'Enviado', 'Recibido', 'Entregado'];
+  readonly statusOptions: Array<'Todos' | SampleOrderStatus> = [
+    'Todos',
+    'Pedido',
+    'Enviado',
+    'Recibido',
+    'Entregado',
+  ];
+  readonly tabs: { id: SampleTab; label: string; icon: string }[] = [
+    { id: 'active', label: 'Muestras Activas', icon: 'science' },
+    { id: 'resolved', label: 'Muestras Resueltas', icon: 'handshake' },
+    { id: 'approvals', label: 'Planillas de Aprobación', icon: 'verified' },
+  ];
 
-  readonly sellers = computed(() => this.users.filter((user) => user.isSeller));
-  readonly editingSample = computed(
-    () => this.samples().find((sample) => sample.id === this.editingSampleId()) ?? null,
-  );
-  readonly selectedCount = computed(() => this.selectedSampleIds().length);
-  readonly deleteTargetSamples = computed(() =>
-    this.samples().filter((sample) => this.deleteTargetIds().includes(sample.id)),
-  );
-  readonly filteredOrders = computed(() => {
+  readonly roleOrders = computed(() => {
+    const user = this.currentUser();
     const activeClientId = this.visitContext.activeClientId();
-    const query = this.orderSearchQuery().trim().toLowerCase();
-
-    return this.orders().filter((order) => {
-      const client = this.clientById(order.clientId);
-      const seller = this.userById(order.sellerId);
-      const supplyNames = order.items.map((item) => this.supplyById(item.supplyId).name).join(' ');
-      const matchesClient = !activeClientId || order.clientId === activeClientId;
-      const matchesQuery =
-        !query ||
-        client.name.toLowerCase().includes(query) ||
-        seller.name.toLowerCase().includes(query) ||
-        supplyNames.toLowerCase().includes(query) ||
-        order.status.toLowerCase().includes(query);
-
-      return matchesClient && matchesQuery;
+    return this.ordersService.orders().filter((order) => {
+      const matchesRole =
+        user.role === 'Coordinador' ? order.coordinatorId === user.id : order.sellerId === user.id;
+      return matchesRole && (!activeClientId || order.clientId === activeClientId);
     });
   });
+
+  readonly activeRows = computed(() =>
+    this.filterRows(
+      this.roleOrders().flatMap((order) =>
+        order.items
+          .filter((item) => item.status !== 'Aprobada' && item.status !== 'Rechazada')
+          .map((item) => ({ order, item })),
+      ),
+    ),
+  );
+
+  readonly visibleOrders = computed(() => {
+    const rows = this.activeRows();
+    return this.roleOrders()
+      .map((order) => ({
+        ...order,
+        items: rows.filter((row) => row.order.id === order.id).map((row) => row.item),
+      }))
+      .filter((order) => order.items.length > 0);
+  });
+
   readonly orderGroups = computed(() => {
     const groups = new Map<string, SampleOrder[]>();
-    for (const order of this.filteredOrders()) {
+    for (const order of this.visibleOrders()) {
       groups.set(order.sellerId, [...(groups.get(order.sellerId) ?? []), order]);
     }
-
     return Array.from(groups.entries()).map(([sellerId, orders]) => ({
       seller: this.userById(sellerId),
       orders,
     }));
   });
 
-  readonly filteredActiveSamples = computed(() => {
-    const query = this.searchQuery().trim().toLowerCase();
-    const status = this.statusFilter();
-    const activeClientId = this.visitContext.activeClientId();
-
-    return this.samples().filter((sample) => {
-      const client = this.clientById(sample.clientId);
-      const supply = this.supplyById(sample.supplyId);
-      const seller = this.userById(sample.sellerId);
-      const matchesClient = !activeClientId || sample.clientId === activeClientId;
-      const matchesStatus = status === 'Todos los estados' || sample.status === status;
-      const matchesQuery =
-        !query ||
-        client.name.toLowerCase().includes(query) ||
-        client.locality.toLowerCase().includes(query) ||
-        supply.name.toLowerCase().includes(query) ||
-        supply.brand.toLowerCase().includes(query) ||
-        seller.name.toLowerCase().includes(query);
-
-      return matchesClient && matchesStatus && matchesQuery;
-    });
+  readonly resolvedRows = computed(() => {
+    const expectedStatus = this.resolutionFilter() === 'approved' ? 'Aprobada' : 'Rechazada';
+    return this.roleOrders()
+      .flatMap((order) => order.items.map((item) => ({ order, item })))
+      .filter((row) => row.item.status === expectedStatus);
   });
 
-  readonly allFilteredSelected = computed(() => {
-    const filtered = this.filteredActiveSamples();
-    const selected = this.selectedSampleIds();
-    return filtered.length > 0 && filtered.every((sample) => selected.includes(sample.id));
+  readonly selectedTransition = computed(() => {
+    const target = this.transitionTarget();
+    return target ? this.findRow(target.orderId, target.itemId) : null;
   });
 
-  readonly tabs: { id: SampleTab; label: string; icon: string }[] = [
-    { id: 'active', label: 'Muestras Activas', icon: 'science' },
-    { id: 'resolved', label: 'Muestras Resueltas', icon: 'handshake' },
-    { id: 'approvals', label: 'Planillas de Aprobacion', icon: 'verified' },
-  ];
+  readonly selectedDelete = computed(() => {
+    const target = this.deleteTarget();
+    return target ? this.findRow(target.orderId, target.itemId) : null;
+  });
 
-  readonly resolutionFilters: { id: ResolutionFilter; label: string }[] = [
-    { id: 'approved', label: 'Aprobadas' },
-    { id: 'rejected', label: 'Rechazadas' },
-  ];
-
-  readonly emptyMessage = computed(() =>
-    this.resolutionFilter() === 'approved'
-      ? 'No hay muestras resueltas.'
-      : 'No hay muestras rechazadas.',
-  );
-
-  openNewSample(): void {
-    this.isNewSampleOpen.set(true);
+  openTransition(orderId: string, itemId: string): void {
+    this.transitionTarget.set({ orderId, itemId });
   }
 
-  openApprovalUpload(): void {
-    this.isApprovalUploadOpen.set(true);
-  }
-
-  openEditSample(sampleId: string): void {
-    this.editingSampleId.set(sampleId);
-  }
-
-  openDeleteSample(sampleId: string): void {
-    this.editingSampleId.set(null);
-    this.isNewSampleOpen.set(false);
-    this.deleteTargetIds.set([sampleId]);
-  }
-
-  openDeleteSelected(): void {
-    this.editingSampleId.set(null);
-    this.isNewSampleOpen.set(false);
-    this.deleteTargetIds.set(this.selectedSampleIds());
-  }
-
-  closeDialogs(): void {
-    this.isNewSampleOpen.set(false);
-    this.isApprovalUploadOpen.set(false);
-    this.editingSampleId.set(null);
-    this.deleteTargetIds.set([]);
-  }
-
-  createSamples(payload: CreateSamplePayload): void {
-    const today = this.formatDate(new Date());
-    const now = this.formatDateTime(new Date());
-    const supplyIds = payload.supplyIds.length
-      ? payload.supplyIds
-      : [this.addOtherSupply(payload.otherSupply)];
-
-    const createdSamples = supplyIds
-      .filter((supplyId): supplyId is string => Boolean(supplyId))
-      .map((supplyId, index) => ({
-        id: `sample-${Date.now()}-${index}`,
-        clientId: payload.clientId,
-        supplyId,
-        sellerId: payload.sellerId,
-        coordinatorId: 'user-arnaldo',
-        status: 'Creada' as SampleStatus,
-        nextFollowUp: null,
-        updatedAt: today,
-        history: [
-          {
-            id: `movement-${Date.now()}-${index}`,
-            author: 'Arnaldo Parra',
-            authorRole: 'Jefe de Ventas' as const,
-            to: 'Creada' as SampleStatus,
-            note: payload.observations?.trim() || 'Muestra creada.',
-            date: now,
-          },
-        ],
-      }));
-
-    this.samples.update((current) => [...createdSamples, ...current]);
-    this.closeDialogs();
-  }
-
-  updateSample(payload: UpdateSamplePayload): void {
-    const sample = this.samples().find((item) => item.id === payload.id);
-    if (!sample) {
+  confirmTransition(payload: SampleTransitionPayload): void {
+    const target = this.transitionTarget();
+    if (!target) {
       return;
     }
-
-    const previousStatus = sample.status;
-    const mention = this.users.find((user) => user.id === payload.mentionUserId);
-    const noteParts = [payload.comment.trim()];
-    if (mention) {
-      noteParts.push(`Mencionado: @${mention.name}`);
-    }
-
-    this.samples.update((current) =>
-      current.map((item) =>
-        item.id === payload.id
-          ? {
-              ...item,
-              status: payload.status,
-              updatedAt: this.formatDate(new Date()),
-              history: [
-                ...item.history,
-                {
-                  id: `movement-${Date.now()}`,
-                  author: 'Arnaldo Parra',
-                  authorRole: 'Jefe de Ventas',
-                  from: previousStatus,
-                  to: payload.status,
-                  note: noteParts.filter(Boolean).join(' - ') || 'Actualizacion de muestra.',
-                  date: this.formatDateTime(new Date()),
-                },
-              ],
-            }
-          : item,
-      ),
+    this.ordersService.transitionItem(
+      target.orderId,
+      target.itemId,
+      payload,
+      this.currentUser().name,
     );
-    this.closeDialogs();
+    this.transitionTarget.set(null);
   }
 
   confirmDelete(): void {
-    const ids = this.deleteTargetIds();
-    this.samples.update((current) => current.filter((sample) => !ids.includes(sample.id)));
-    this.selectedSampleIds.update((current) => current.filter((id) => !ids.includes(id)));
-    this.closeDialogs();
-  }
-
-  toggleSampleSelection(sampleId: string, checked: boolean): void {
-    this.selectedSampleIds.update((current) =>
-      checked ? [...new Set([...current, sampleId])] : current.filter((id) => id !== sampleId),
-    );
-  }
-
-  toggleAllActive(checked: boolean): void {
-    const filteredIds = this.filteredActiveSamples().map((sample) => sample.id);
-    this.selectedSampleIds.update((current) =>
-      checked
-        ? [...new Set([...current, ...filteredIds])]
-        : current.filter((id) => !filteredIds.includes(id)),
-    );
-  }
-
-  isSelected(sampleId: string): boolean {
-    return this.selectedSampleIds().includes(sampleId);
-  }
-
-  orderAlert(order: SampleOrder) {
-    return this.ordersService.alertFor(order);
-  }
-
-  statusReached(order: SampleOrder, status: SampleOrderStatus): boolean {
-    return this.orderStatusSteps.indexOf(status) <= this.orderStatusSteps.indexOf(order.status);
-  }
-
-  updateEstimatedDelivery(orderId: string, value: string): void {
-    this.estimatedDeliveryDrafts.update((current) => ({ ...current, [orderId]: value }));
-  }
-
-  estimatedDeliveryValue(order: SampleOrder): string {
-    return this.estimatedDeliveryDrafts()[order.id] ?? this.toInputDate(order.estimatedDelivery);
-  }
-
-  markSent(order: SampleOrder): void {
-    const inputDate = this.estimatedDeliveryValue(order);
-    if (!inputDate) {
+    const target = this.deleteTarget();
+    if (!target) {
       return;
     }
-
-    this.ordersService.advanceOrder(order.id, 'Enviado', this.fromInputDate(inputDate));
+    this.ordersService.deleteItem(target.orderId, target.itemId);
+    this.deleteTarget.set(null);
   }
 
-  markReceived(order: SampleOrder): void {
-    this.ordersService.advanceOrder(order.id, 'Recibido');
+  actionLabel(row: OrderItemRow): string | null {
+    const user = this.currentUser();
+    if (user.role === 'Coordinador') {
+      return row.item.status === 'Pedido' ? 'Marcar enviado' : null;
+    }
+    if (row.order.sellerId !== user.id) {
+      return null;
+    }
+    const labels: Partial<Record<SampleOrderStatus, string>> = {
+      Enviado: 'Marcar recibido',
+      Recibido: 'Marcar entregado',
+      Entregado: 'Evaluar',
+    };
+    return labels[row.item.status] ?? null;
   }
 
-  markDelivered(order: SampleOrder): void {
-    this.ordersService.advanceOrder(order.id, 'Entregado');
+  orderAlert(item: SampleOrderItem): SampleOrderAlert | null {
+    return this.ordersService.alertFor(item, this.currentUser().role);
+  }
+
+  statusReached(item: SampleOrderItem, status: SampleOrderStatus): boolean {
+    return this.orderStatusSteps.indexOf(status) <= this.orderStatusSteps.indexOf(item.status);
+  }
+
+  dateSummary(item: SampleOrderItem): string {
+    if (item.status === 'Pedido') {
+      return `Pedido: ${item.requestedAt}`;
+    }
+    if (item.status === 'Enviado') {
+      return `Recepción estimada: ${item.estimatedReception}`;
+    }
+    if (item.status === 'Recibido') {
+      return `Entrega estimada: ${item.estimatedDelivery}`;
+    }
+    if (item.status === 'Entregado') {
+      return `Seguimiento: ${item.followUpAt}`;
+    }
+    return `Resuelta: ${item.deliveredAt}`;
   }
 
   clientById(clientId: string): MockClient {
@@ -325,44 +197,28 @@ export class SamplesPage {
     return this.users.find((user) => user.id === userId) ?? this.users[0];
   }
 
-  private addOtherSupply(otherSupply?: string): string {
-    const name = otherSupply?.trim();
-    if (!name) {
-      return '';
-    }
-
-    const id = `supply-custom-${Date.now()}`;
-    this.supplies.push({
-      id,
-      name,
-      brand: 'OTROS',
-      description: 'Artículo agregado manualmente durante la carga de una muestra.',
+  private filterRows(rows: OrderItemRow[]): OrderItemRow[] {
+    const query = this.searchQuery().trim().toLowerCase();
+    const status = this.statusFilter();
+    return rows.filter((row) => {
+      const client = this.clientById(row.order.clientId);
+      const supply = this.supplyById(row.item.supplyId);
+      const seller = this.userById(row.order.sellerId);
+      const matchesStatus = status === 'Todos' || row.item.status === status;
+      const matchesQuery =
+        !query ||
+        client.name.toLowerCase().includes(query) ||
+        supply.name.toLowerCase().includes(query) ||
+        supply.brand.toLowerCase().includes(query) ||
+        seller.name.toLowerCase().includes(query) ||
+        row.item.status.toLowerCase().includes(query);
+      return matchesStatus && matchesQuery;
     });
-    return id;
   }
 
-  private formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('es-AR').format(date);
-  }
-
-  private formatDateTime(date: Date): string {
-    return `${this.formatDate(date)}, ${date.toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })}`;
-  }
-
-  private toInputDate(value: string | null): string {
-    if (!value) {
-      return '';
-    }
-
-    const [day, month, year] = value.split('/');
-    return `${year}-${month}-${day}`;
-  }
-
-  private fromInputDate(value: string): string {
-    const [year, month, day] = value.split('-');
-    return `${day}/${month}/${year}`;
+  private findRow(orderId: string, itemId: string): OrderItemRow | null {
+    const order = this.ordersService.orders().find((item) => item.id === orderId);
+    const item = order?.items.find((sample) => sample.id === itemId);
+    return order && item ? { order, item } : null;
   }
 }

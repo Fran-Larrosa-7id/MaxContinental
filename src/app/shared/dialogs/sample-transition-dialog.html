@@ -1,0 +1,93 @@
+<section class="mc-dialog overflow-hidden rounded-lg bg-white text-[#082653] shadow-2xl">
+  <header class="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+    <div class="min-w-0 pr-3">
+      <h2 class="text-lg font-black">{{ title() }}</h2>
+      <p class="mt-1 truncate text-sm text-slate-500">{{ supply().name }}</p>
+    </div>
+    <button
+      type="button"
+      class="flex size-9 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+      aria-label="Cerrar"
+      (click)="closed.emit()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="space-y-4 px-5 py-5">
+    @if (isEvaluation()) {
+      <fieldset>
+        <legend class="mb-2 text-xs font-black uppercase text-slate-500">Resolución</legend>
+        <div class="grid grid-cols-3 rounded-md bg-slate-100 p-1">
+          @for (option of ['Aprobada', 'Rechazada', 'Mas plazo']; track option) {
+            <button
+              type="button"
+              class="min-h-9 rounded px-2 text-xs font-bold transition"
+              [class.bg-white]="resolution() === option"
+              [class.text-[#203f75]]="resolution() === option"
+              [class.shadow-sm]="resolution() === option"
+              [class.text-slate-500]="resolution() !== option"
+              (click)="selectResolution($any(option))"
+            >
+              {{ option === 'Mas plazo' ? 'Más plazo' : option }}
+            </button>
+          }
+        </div>
+      </fieldset>
+    }
+
+    @if (requiresDate()) {
+      <label class="block">
+        <span class="mb-1.5 block text-xs font-black uppercase text-slate-500">
+          {{ dateLabel() }}
+        </span>
+        <input
+          type="date"
+          class="h-11 w-full rounded-md border border-slate-200 px-3 outline-none transition focus:border-[#45658f]"
+          [ngModel]="estimatedDate()"
+          (ngModelChange)="estimatedDate.set($event)"
+        />
+      </label>
+    }
+
+    @if (automaticDateMessage()) {
+      <p
+        class="flex items-start gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-800"
+      >
+        <mat-icon class="!text-[17px]">event_available</mat-icon>
+        {{ automaticDateMessage() }}
+      </p>
+    }
+
+    <label class="block">
+      <span class="mb-1.5 block text-xs font-black uppercase text-slate-500">
+        {{ isEvaluation() ? 'Feedback del cliente' : 'Observación' }}
+      </span>
+      <textarea
+        rows="3"
+        class="w-full resize-none rounded-md border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-[#45658f]"
+        placeholder="Agregue un comentario sobre la gestión..."
+        [ngModel]="observation()"
+        (ngModelChange)="observation.set($event)"
+      ></textarea>
+    </label>
+  </div>
+
+  <footer class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4">
+    <button
+      type="button"
+      class="h-10 rounded-md border border-slate-300 px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+      (click)="closed.emit()"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="h-10 rounded-md bg-[#45658f] px-5 text-sm font-bold text-white transition hover:bg-[#31547f] disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="requiresDate() && !estimatedDate()"
+      (click)="submit()"
+    >
+      Confirmar
+    </button>
+  </footer>
+</section>
