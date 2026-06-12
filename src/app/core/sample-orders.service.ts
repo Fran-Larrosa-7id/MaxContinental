@@ -137,6 +137,75 @@ const INITIAL_ORDERS: SampleOrder[] = [
           },
         ],
       },
+      {
+        id: 'sample-1003-b',
+        supplyId: 'supply-8',
+        quantity: 1,
+        observation: 'Validar funcionamiento con enfermería.',
+        status: 'Entregado',
+        requestedAt: '20/05/2026',
+        receptionAt: '23/05/2026',
+        receivedAt: '23/05/2026',
+        visitAt: '25/05/2026',
+        deliveredAt: '25/05/2026',
+        followUpMaxAt: '09/06/2026',
+        feedback: '',
+        history: [
+          {
+            id: 'event-1003-b',
+            status: 'Entregado',
+            date: '25/05/2026, 14:30',
+            author: 'Cristian Bohn',
+            note: 'Muestra entregada. Seguimiento máximo definido para el 09/06/2026.',
+          },
+        ],
+      },
+      {
+        id: 'sample-1003-c',
+        supplyId: 'supply-11',
+        quantity: 1,
+        observation: 'Evaluación en terapia intensiva.',
+        status: 'Aprobada',
+        requestedAt: '10/05/2026',
+        receptionAt: '13/05/2026',
+        receivedAt: '13/05/2026',
+        visitAt: '15/05/2026',
+        deliveredAt: '15/05/2026',
+        followUpMaxAt: '30/05/2026',
+        feedback: 'El producto cumplió con las expectativas del sector.',
+        history: [
+          {
+            id: 'event-1003-c',
+            status: 'Aprobada',
+            date: '28/05/2026, 10:15',
+            author: 'Cristian Bohn',
+            note: 'Muestra aprobada por el cliente.',
+          },
+        ],
+      },
+      {
+        id: 'sample-1003-d',
+        supplyId: 'supply-12',
+        quantity: 1,
+        observation: 'Prueba comparativa con producto actual.',
+        status: 'Rechazada',
+        requestedAt: '11/05/2026',
+        receptionAt: '14/05/2026',
+        receivedAt: '14/05/2026',
+        visitAt: '16/05/2026',
+        deliveredAt: '16/05/2026',
+        followUpMaxAt: '31/05/2026',
+        feedback: 'El cliente prefirió continuar con el insumo que utiliza actualmente.',
+        history: [
+          {
+            id: 'event-1003-d',
+            status: 'Rechazada',
+            date: '29/05/2026, 11:40',
+            author: 'Cristian Bohn',
+            note: 'Muestra rechazada por el cliente.',
+          },
+        ],
+      },
     ],
   },
 ];
@@ -317,10 +386,34 @@ export class SampleOrdersService {
     }
 
     if (item.status === 'Entregado') {
+      if (this.isOverdue(item.followUpMaxAt)) {
+        return {
+          tone: 'red',
+          label: 'Seguimiento vencido',
+          message: `El plazo máximo finalizó el ${item.followUpMaxAt}.`,
+        };
+      }
+
       return {
         tone: 'orange',
         label: 'Seguimiento activo',
         message: `Resolver antes del ${item.followUpMaxAt}.`,
+      };
+    }
+
+    if (item.status === 'Aprobada') {
+      return {
+        tone: 'green',
+        label: 'Muestra aprobada',
+        message: 'El seguimiento finalizó con resultado favorable.',
+      };
+    }
+
+    if (item.status === 'Rechazada') {
+      return {
+        tone: 'black',
+        label: 'Muestra rechazada',
+        message: 'El seguimiento finalizó con resultado desfavorable.',
       };
     }
 

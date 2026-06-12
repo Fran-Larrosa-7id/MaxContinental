@@ -46,7 +46,7 @@ export type SampleOrder = {
 };
 
 export type SampleOrderAlert = {
-  tone: 'white' | 'cyan' | 'yellow' | 'orange';
+  tone: 'white' | 'cyan' | 'yellow' | 'orange' | 'red' | 'green' | 'black';
   label: string;
   message: string;
 };

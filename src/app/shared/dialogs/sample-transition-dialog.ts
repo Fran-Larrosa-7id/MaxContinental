@@ -36,10 +36,17 @@ export class SampleTransitionDialog implements OnInit {
   readonly requiresDate = computed(
     () => !this.isEvaluation() || this.transitionModel().resolution === 'Mas plazo',
   );
+  readonly requiresObservation = computed(
+    () => this.isEvaluation() && this.transitionModel().resolution !== 'Mas plazo',
+  );
   readonly transitionForm = form(this.transitionModel, (fields) => {
     required(fields.estimatedDate, {
       message: 'Seleccione una fecha.',
       when: () => this.requiresDate(),
+    });
+    required(fields.observation, {
+      message: 'Agregue una observación para cerrar el seguimiento.',
+      when: () => this.requiresObservation(),
     });
   });
   readonly title = computed(() => {

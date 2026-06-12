@@ -245,6 +245,9 @@
                                     [class.border-orange-300]="alert.tone === 'orange'"
                                     [class.bg-orange-50]="alert.tone === 'orange'"
                                     [class.text-orange-800]="alert.tone === 'orange'"
+                                    [class.border-red-300]="alert.tone === 'red'"
+                                    [class.bg-red-50]="alert.tone === 'red'"
+                                    [class.text-red-800]="alert.tone === 'red'"
                                   >
                                     <mat-icon class="!text-[18px] sm:!text-[19px]"
                                       >notifications_active</mat-icon
@@ -381,6 +384,9 @@
                       [class.border-orange-300]="alert.tone === 'orange'"
                       [class.bg-orange-50]="alert.tone === 'orange'"
                       [class.text-orange-800]="alert.tone === 'orange'"
+                      [class.border-red-300]="alert.tone === 'red'"
+                      [class.bg-red-50]="alert.tone === 'red'"
+                      [class.text-red-800]="alert.tone === 'red'"
                     >
                       <mat-icon class="!text-[17px]">notifications_active</mat-icon>
                       <span class="truncate">{{ alert.label }}</span>
@@ -476,6 +482,7 @@
                       [class.text-cyan-700]="alert.tone === 'cyan'"
                       [class.text-yellow-700]="alert.tone === 'yellow'"
                       [class.text-orange-700]="alert.tone === 'orange'"
+                      [class.text-red-700]="alert.tone === 'red'"
                     >
                       {{ alert.label }}
                     </small>
@@ -544,11 +551,24 @@
         <article class="overflow-hidden rounded-lg bg-white shadow-sm">
           @for (row of resolvedRows(); track row.item.id) {
             <div
-              class="grid gap-3 border-b border-slate-100 px-5 py-4 last:border-b-0 md:grid-cols-[1fr_1fr_0.6fr_1.3fr] md:items-center"
+              class="grid gap-3 border-b border-slate-100 px-5 py-4 last:border-b-0 md:grid-cols-[1fr_1fr_0.75fr_1.3fr] md:items-center"
             >
               <strong>{{ clientById(row.order.clientId).name }}</strong>
               <span>{{ supplyById(row.item.supplyId).name }}</span>
-              <span class="font-bold">{{ row.item.status }}</span>
+              @if (orderAlert(row.item); as alert) {
+                <span
+                  class="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-black"
+                  [class.bg-green-100]="alert.tone === 'green'"
+                  [class.text-green-800]="alert.tone === 'green'"
+                  [class.bg-slate-900]="alert.tone === 'black'"
+                  [class.text-white]="alert.tone === 'black'"
+                >
+                  <mat-icon class="!text-[15px]">
+                    {{ alert.tone === 'green' ? 'check_circle' : 'cancel' }}
+                  </mat-icon>
+                  {{ row.item.status }}
+                </span>
+              }
               <p class="text-sm text-slate-500">
                 {{ row.item.feedback || 'Sin feedback cargado.' }}
               </p>
