@@ -43,8 +43,7 @@ export class AppShell {
   );
 
   readonly navItems: NavItem[] = [
-    { label: 'Clientes', mobileLabel: 'Clientes', icon: 'groups', path: '/app/clientes' },
-    { label: 'Artículos', mobileLabel: 'Artículos', icon: 'inventory_2', path: '/app/articulos' },
+    { label: 'Nueva Muestra', mobileLabel: 'Nueva Muestra', icon: 'groups', path: '/app/clientes' },
     { label: 'Muestras', mobileLabel: 'Muestras', icon: 'science', path: '/app/muestras' },
     {
       label: 'Tablero de Control',

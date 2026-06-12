@@ -181,14 +181,14 @@
                               </div>
                               <span
                                 class="inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-black"
-                                [class.bg-blue-100]="item.status === 'Pedido'"
-                                [class.text-blue-700]="item.status === 'Pedido'"
-                                [class.bg-indigo-100]="item.status === 'Enviado'"
-                                [class.text-indigo-700]="item.status === 'Enviado'"
-                                [class.bg-orange-100]="item.status === 'Recibido'"
-                                [class.text-orange-700]="item.status === 'Recibido'"
-                                [class.bg-red-100]="item.status === 'Entregado'"
-                                [class.text-red-700]="item.status === 'Entregado'"
+                                [class.bg-slate-100]="item.status === 'Pedido'"
+                                [class.text-slate-700]="item.status === 'Pedido'"
+                                [class.bg-cyan-100]="item.status === 'Enviado'"
+                                [class.text-cyan-800]="item.status === 'Enviado'"
+                                [class.bg-yellow-100]="item.status === 'Recibido'"
+                                [class.text-yellow-800]="item.status === 'Recibido'"
+                                [class.bg-orange-100]="item.status === 'Entregado'"
+                                [class.text-orange-800]="item.status === 'Entregado'"
                               >
                                 {{ item.status }}
                               </span>
@@ -233,21 +233,18 @@
                                 @if (orderAlert(item); as alert) {
                                   <div
                                     class="flex items-start gap-2 rounded-md border px-3 py-2 sm:gap-3 sm:py-2.5"
-                                    [class.border-green-200]="alert.tone === 'green'"
-                                    [class.bg-green-50]="alert.tone === 'green'"
-                                    [class.text-green-800]="alert.tone === 'green'"
+                                    [class.border-slate-300]="alert.tone === 'white'"
+                                    [class.bg-white]="alert.tone === 'white'"
+                                    [class.text-slate-700]="alert.tone === 'white'"
+                                    [class.border-cyan-300]="alert.tone === 'cyan'"
+                                    [class.bg-cyan-50]="alert.tone === 'cyan'"
+                                    [class.text-cyan-800]="alert.tone === 'cyan'"
                                     [class.border-yellow-300]="alert.tone === 'yellow'"
                                     [class.bg-yellow-50]="alert.tone === 'yellow'"
                                     [class.text-yellow-800]="alert.tone === 'yellow'"
                                     [class.border-orange-300]="alert.tone === 'orange'"
                                     [class.bg-orange-50]="alert.tone === 'orange'"
                                     [class.text-orange-800]="alert.tone === 'orange'"
-                                    [class.border-red-300]="alert.tone === 'red'"
-                                    [class.bg-red-50]="alert.tone === 'red'"
-                                    [class.text-red-800]="alert.tone === 'red'"
-                                    [class.border-blue-200]="alert.tone === 'blue'"
-                                    [class.bg-blue-50]="alert.tone === 'blue'"
-                                    [class.text-blue-800]="alert.tone === 'blue'"
                                   >
                                     <mat-icon class="!text-[18px] sm:!text-[19px]"
                                       >notifications_active</mat-icon
@@ -320,7 +317,15 @@
                     </span>
                   </div>
                   <span
-                    class="shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-black text-blue-700"
+                    class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black"
+                    [class.bg-slate-100]="row.item.status === 'Pedido'"
+                    [class.text-slate-700]="row.item.status === 'Pedido'"
+                    [class.bg-cyan-100]="row.item.status === 'Enviado'"
+                    [class.text-cyan-800]="row.item.status === 'Enviado'"
+                    [class.bg-yellow-100]="row.item.status === 'Recibido'"
+                    [class.text-yellow-800]="row.item.status === 'Recibido'"
+                    [class.bg-orange-100]="row.item.status === 'Entregado'"
+                    [class.text-orange-800]="row.item.status === 'Entregado'"
                   >
                     {{ row.item.status }}
                   </span>
@@ -364,21 +369,18 @@
                   @if (orderAlert(row.item); as alert) {
                     <div
                       class="mt-3 flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-bold"
-                      [class.border-green-200]="alert.tone === 'green'"
-                      [class.bg-green-50]="alert.tone === 'green'"
-                      [class.text-green-700]="alert.tone === 'green'"
+                      [class.border-slate-300]="alert.tone === 'white'"
+                      [class.bg-white]="alert.tone === 'white'"
+                      [class.text-slate-700]="alert.tone === 'white'"
+                      [class.border-cyan-300]="alert.tone === 'cyan'"
+                      [class.bg-cyan-50]="alert.tone === 'cyan'"
+                      [class.text-cyan-800]="alert.tone === 'cyan'"
                       [class.border-yellow-300]="alert.tone === 'yellow'"
                       [class.bg-yellow-50]="alert.tone === 'yellow'"
-                      [class.text-yellow-700]="alert.tone === 'yellow'"
+                      [class.text-yellow-800]="alert.tone === 'yellow'"
                       [class.border-orange-300]="alert.tone === 'orange'"
                       [class.bg-orange-50]="alert.tone === 'orange'"
-                      [class.text-orange-700]="alert.tone === 'orange'"
-                      [class.border-red-300]="alert.tone === 'red'"
-                      [class.bg-red-50]="alert.tone === 'red'"
-                      [class.text-red-700]="alert.tone === 'red'"
-                      [class.border-blue-200]="alert.tone === 'blue'"
-                      [class.bg-blue-50]="alert.tone === 'blue'"
-                      [class.text-blue-700]="alert.tone === 'blue'"
+                      [class.text-orange-800]="alert.tone === 'orange'"
                     >
                       <mat-icon class="!text-[17px]">notifications_active</mat-icon>
                       <span class="truncate">{{ alert.label }}</span>
@@ -453,7 +455,15 @@
                   </small>
                 </div>
                 <span
-                  class="w-fit rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700"
+                  class="w-fit rounded-full px-2.5 py-1 text-xs font-bold"
+                  [class.bg-slate-100]="row.item.status === 'Pedido'"
+                  [class.text-slate-700]="row.item.status === 'Pedido'"
+                  [class.bg-cyan-100]="row.item.status === 'Enviado'"
+                  [class.text-cyan-800]="row.item.status === 'Enviado'"
+                  [class.bg-yellow-100]="row.item.status === 'Recibido'"
+                  [class.text-yellow-800]="row.item.status === 'Recibido'"
+                  [class.bg-orange-100]="row.item.status === 'Entregado'"
+                  [class.text-orange-800]="row.item.status === 'Entregado'"
                 >
                   {{ row.item.status }}
                 </span>
@@ -462,11 +472,10 @@
                   @if (orderAlert(row.item); as alert) {
                     <small
                       class="mt-1 block font-bold"
-                      [class.text-green-700]="alert.tone === 'green'"
+                      [class.text-slate-700]="alert.tone === 'white'"
+                      [class.text-cyan-700]="alert.tone === 'cyan'"
                       [class.text-yellow-700]="alert.tone === 'yellow'"
                       [class.text-orange-700]="alert.tone === 'orange'"
-                      [class.text-red-700]="alert.tone === 'red'"
-                      [class.text-blue-700]="alert.tone === 'blue'"
                     >
                       {{ alert.label }}
                     </small>

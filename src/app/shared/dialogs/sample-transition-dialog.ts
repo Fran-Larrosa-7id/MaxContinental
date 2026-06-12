@@ -58,16 +58,24 @@ export class SampleTransitionDialog implements OnInit {
       return 'Fecha estimada de recepción';
     }
     if (this.item().status === 'Enviado') {
-      return 'Fecha estimada de entrega';
+      return 'Fecha de visita al cliente';
     }
-    return 'Próximo seguimiento';
+    return 'Fecha máxima de seguimiento';
   });
+  readonly maximumDate = computed(() =>
+    this.item().status === 'Recibido' ||
+    (this.item().status === 'Entregado' && this.transitionModel().resolution === 'Mas plazo')
+      ? this.addDays(new Date(), 15)
+      : null,
+  );
   readonly automaticDateMessage = computed(() => {
     const messages: Record<SampleOrderItem['status'], string> = {
-      Pedido: 'La fecha de envío se registrará automáticamente al confirmar.',
+      Pedido: 'La fecha del pedido se registró automáticamente al crearlo.',
       Enviado: 'La fecha de recepción se registrará automáticamente al confirmar.',
-      Recibido: 'La fecha de entrega se registrará automáticamente al confirmar.',
-      Entregado: 'La resolución y el feedback quedarán registrados en el historial.',
+      Recibido:
+        'La fecha de entrega se registrará automáticamente. Puede definir un seguimiento de hasta 15 días.',
+      Entregado:
+        'El plazo puede extenderse hasta un máximo de 15 días. El feedback quedará guardado en el historial.',
       Aprobada: '',
       Rechazada: '',
     };
@@ -76,7 +84,7 @@ export class SampleTransitionDialog implements OnInit {
 
   ngOnInit(): void {
     if (this.item().status === 'Recibido') {
-      this.transitionForm.estimatedDate().value.set(this.addDays(new Date(), 5));
+      this.transitionForm.estimatedDate().value.set(this.addDays(new Date(), 15));
     }
   }
 
@@ -86,10 +94,12 @@ export class SampleTransitionDialog implements OnInit {
       return;
     }
 
-    const currentFollowUp = this.parseDisplayDate(this.item().followUpAt);
+    const currentFollowUp = this.parseDisplayDate(this.item().followUpMaxAt);
     const baseDate =
       currentFollowUp && currentFollowUp.getTime() > Date.now() ? currentFollowUp : new Date();
-    this.transitionForm.estimatedDate().value.set(this.addDays(baseDate, 5));
+    this.transitionForm.estimatedDate().value.set(
+      this.minimumDate(this.addDays(baseDate, 5), this.addDays(new Date(), 15)),
+    );
   }
 
   submit(): void {
@@ -117,6 +127,10 @@ export class SampleTransitionDialog implements OnInit {
     const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     result.setDate(result.getDate() + days);
     return result;
+  }
+
+  private minimumDate(first: Date, second: Date): Date {
+    return first.getTime() <= second.getTime() ? first : second;
   }
 
   private toInputDate(date: Date | null): string {

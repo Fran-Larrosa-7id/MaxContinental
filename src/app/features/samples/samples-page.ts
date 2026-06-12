@@ -174,13 +174,13 @@ export class SamplesPage {
       return `Pedido: ${item.requestedAt}`;
     }
     if (item.status === 'Enviado') {
-      return `Recepción estimada: ${item.estimatedReception}`;
+      return `Recepción estimada: ${item.receptionAt}`;
     }
     if (item.status === 'Recibido') {
-      return `Entrega estimada: ${item.estimatedDelivery}`;
+      return `Visita: ${item.visitAt}`;
     }
     if (item.status === 'Entregado') {
-      return `Seguimiento: ${item.followUpAt}`;
+      return `Seguimiento máximo: ${item.followUpMaxAt}`;
     }
     return `Resuelta: ${item.deliveredAt}`;
   }

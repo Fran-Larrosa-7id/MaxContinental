@@ -47,6 +47,7 @@
             matInput
             readonly
             [matDatepicker]="datePicker"
+            [max]="maximumDate()"
             [formField]="transitionForm.estimatedDate"
             (click)="datePicker.open()"
             placeholder="Seleccionar fecha"

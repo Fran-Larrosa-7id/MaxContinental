@@ -25,12 +25,11 @@ const INITIAL_ORDERS: SampleOrder[] = [
         observation: 'Entregar en sector de compras.',
         status: 'Pedido',
         requestedAt: '06/06/2026',
-        sentAt: null,
-        estimatedReception: null,
+        receptionAt: null,
         receivedAt: null,
-        estimatedDelivery: null,
+        visitAt: null,
         deliveredAt: null,
-        followUpAt: null,
+        followUpMaxAt: null,
         feedback: '',
         history: [
           {
@@ -49,12 +48,11 @@ const INITIAL_ORDERS: SampleOrder[] = [
         observation: 'Prioridad alta.',
         status: 'Enviado',
         requestedAt: '06/06/2026',
-        sentAt: '07/06/2026',
-        estimatedReception: '08/06/2026',
+        receptionAt: '08/06/2026',
         receivedAt: null,
-        estimatedDelivery: null,
+        visitAt: null,
         deliveredAt: null,
-        followUpAt: null,
+        followUpMaxAt: null,
         feedback: '',
         history: [
           {
@@ -90,12 +88,11 @@ const INITIAL_ORDERS: SampleOrder[] = [
         observation: 'Coordinar entrega con farmacia.',
         status: 'Recibido',
         requestedAt: '03/06/2026',
-        sentAt: '04/06/2026',
-        estimatedReception: '07/06/2026',
+        receptionAt: '07/06/2026',
         receivedAt: '07/06/2026',
-        estimatedDelivery: '09/06/2026',
+        visitAt: '14/06/2026',
         deliveredAt: null,
-        followUpAt: null,
+        followUpMaxAt: null,
         feedback: '',
         history: [
           {
@@ -103,7 +100,7 @@ const INITIAL_ORDERS: SampleOrder[] = [
             status: 'Recibido',
             date: '07/06/2026, 09:40',
             author: 'Luis Benedicti',
-            note: 'Artículo recibido. Entrega estimada para el 09/06/2026.',
+            note: 'Artículo recibido. Visita programada para el 14/06/2026.',
           },
         ],
       },
@@ -124,12 +121,11 @@ const INITIAL_ORDERS: SampleOrder[] = [
         observation: 'Muestra para evaluación.',
         status: 'Entregado',
         requestedAt: '30/05/2026',
-        sentAt: '31/05/2026',
-        estimatedReception: '04/06/2026',
+        receptionAt: '04/06/2026',
         receivedAt: '04/06/2026',
-        estimatedDelivery: '05/06/2026',
+        visitAt: '05/06/2026',
         deliveredAt: '05/06/2026',
-        followUpAt: '09/06/2026',
+        followUpMaxAt: '20/06/2026',
         feedback: '',
         history: [
           {
@@ -137,7 +133,7 @@ const INITIAL_ORDERS: SampleOrder[] = [
             status: 'Entregado',
             date: '05/06/2026, 16:00',
             author: 'Cristian Bohn',
-            note: 'Muestra entregada. Seguimiento programado para el 09/06/2026.',
+            note: 'Muestra entregada. Seguimiento máximo definido para el 20/06/2026.',
           },
         ],
       },
@@ -208,12 +204,11 @@ export class SampleOrdersService {
       id: `sample-${Date.now()}-${index}`,
       status: 'Pedido',
       requestedAt: createdAt,
-      sentAt: null,
-      estimatedReception: null,
+      receptionAt: null,
       receivedAt: null,
-      estimatedDelivery: null,
+      visitAt: null,
       deliveredAt: null,
-      followUpAt: null,
+      followUpMaxAt: null,
       feedback: '',
       history: [
         {
@@ -298,50 +293,34 @@ export class SampleOrdersService {
     if (item.status === 'Pedido') {
       return role === 'Coordinador'
         ? {
-            tone: 'green',
-            label: 'Coordinación notificada',
-            message: 'Hay una muestra pendiente de envío.',
+            tone: 'white',
+            label: 'Nuevo pedido',
+            message: 'Hay una muestra pendiente de carga y envío.',
           }
         : null;
     }
 
-    if (item.status === 'Enviado' && this.isOverdue(item.estimatedReception)) {
+    if (item.status === 'Enviado' && this.isOverdue(item.receptionAt)) {
       return {
-        tone: 'yellow',
+        tone: 'cyan',
         label: 'Recepción demorada',
-        message: `La recepción estaba prevista para el ${item.estimatedReception}.`,
-      };
-    }
-
-    if (item.status === 'Enviado') {
-      return {
-        tone: 'blue',
-        label: 'En tránsito',
-        message: `Recepción estimada: ${item.estimatedReception}.`,
+        message: `La recepción estaba prevista para el ${item.receptionAt}.`,
       };
     }
 
     if (item.status === 'Recibido') {
       return {
-        tone: 'orange',
+        tone: 'yellow',
         label: 'Entrega pendiente',
-        message: `La entrega al cliente está prevista para el ${item.estimatedDelivery}.`,
+        message: `Visita al cliente programada para el ${item.visitAt}.`,
       };
     }
 
     if (item.status === 'Entregado') {
-      if (!this.isOverdue(item.followUpAt)) {
-        return {
-          tone: 'blue',
-          label: 'Seguimiento programado',
-          message: `El recordatorio se activará el ${item.followUpAt}.`,
-        };
-      }
-
       return {
-        tone: 'red',
-        label: 'Realizar seguimiento',
-        message: `La consulta al cliente estaba programada para el ${item.followUpAt}.`,
+        tone: 'orange',
+        label: 'Seguimiento activo',
+        message: `Resolver antes del ${item.followUpMaxAt}.`,
       };
     }
 
@@ -358,8 +337,7 @@ export class SampleOrdersService {
       return {
         ...item,
         status: 'Enviado',
-        sentAt: automaticDate,
-        estimatedReception: estimatedDate,
+        receptionAt: estimatedDate,
       };
     }
     if (item.status === 'Enviado') {
@@ -367,7 +345,7 @@ export class SampleOrdersService {
         ...item,
         status: 'Recibido',
         receivedAt: automaticDate,
-        estimatedDelivery: estimatedDate,
+        visitAt: estimatedDate,
       };
     }
     if (item.status === 'Recibido') {
@@ -375,13 +353,13 @@ export class SampleOrdersService {
         ...item,
         status: 'Entregado',
         deliveredAt: automaticDate,
-        followUpAt: estimatedDate,
+        followUpMaxAt: estimatedDate,
       };
     }
     if (item.status === 'Entregado' && payload.resolution === 'Mas plazo') {
       return {
         ...item,
-        followUpAt: estimatedDate,
+        followUpMaxAt: estimatedDate,
         feedback: payload.observation || item.feedback,
       };
     }

@@ -26,12 +26,11 @@ export type SampleOrderItem = SampleCartItem & {
   id: string;
   status: SampleOrderStatus;
   requestedAt: string;
-  sentAt: string | null;
-  estimatedReception: string | null;
+  receptionAt: string | null;
   receivedAt: string | null;
-  estimatedDelivery: string | null;
+  visitAt: string | null;
   deliveredAt: string | null;
-  followUpAt: string | null;
+  followUpMaxAt: string | null;
   feedback: string;
   history: SampleOrderEvent[];
 };
@@ -47,7 +46,7 @@ export type SampleOrder = {
 };
 
 export type SampleOrderAlert = {
-  tone: 'green' | 'yellow' | 'orange' | 'red' | 'blue';
+  tone: 'white' | 'cyan' | 'yellow' | 'orange';
   label: string;
   message: string;
 };
