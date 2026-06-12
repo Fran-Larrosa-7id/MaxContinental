@@ -570,20 +570,22 @@
   }
 </main>
 
-@if (selectedTransition(); as row) {
-  <div
-    class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
-    (click)="transitionTarget.set(null)"
-  >
-    <app-sample-transition-dialog
-      class="mc-dialog w-full max-w-md"
-      [item]="row.item"
-      [supply]="supplyById(row.item.supplyId)"
-      (confirmed)="confirmTransition($event)"
-      (closed)="transitionTarget.set(null)"
-      (click)="$event.stopPropagation()"
-    />
-  </div>
+@defer (when selectedTransition()) {
+  @if (selectedTransition(); as row) {
+    <div
+      class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
+      (click)="transitionTarget.set(null)"
+    >
+      <app-sample-transition-dialog
+        class="mc-dialog w-full max-w-md"
+        [item]="row.item"
+        [supply]="supplyById(row.item.supplyId)"
+        (confirmed)="confirmTransition($event)"
+        (closed)="transitionTarget.set(null)"
+        (click)="$event.stopPropagation()"
+      />
+    </div>
+  }
 }
 
 @if (selectedDelete(); as row) {
@@ -626,15 +628,17 @@
   </div>
 }
 
-@if (isApprovalUploadOpen()) {
-  <div
-    class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
-    (click)="isApprovalUploadOpen.set(false)"
-  >
-    <app-upload-approval-dialog
-      class="mc-dialog w-full max-w-lg"
-      (closed)="isApprovalUploadOpen.set(false)"
-      (click)="$event.stopPropagation()"
-    />
-  </div>
+@defer (when isApprovalUploadOpen()) {
+  @if (isApprovalUploadOpen()) {
+    <div
+      class="mc-overlay fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-3"
+      (click)="isApprovalUploadOpen.set(false)"
+    >
+      <app-upload-approval-dialog
+        class="mc-dialog w-full max-w-lg"
+        (closed)="isApprovalUploadOpen.set(false)"
+        (click)="$event.stopPropagation()"
+      />
+    </div>
+  }
 }

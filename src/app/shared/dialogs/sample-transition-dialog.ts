@@ -1,5 +1,5 @@
 import { Component, computed, input, OnInit, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { form, FormField, required } from '@angular/forms/signals';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,9 +8,15 @@ import { MatInputModule } from '@angular/material/input';
 import { SampleOrderItem, SampleTransitionPayload } from '../../core/sample-orders.models';
 import { MockSupply } from '../../features/samples/samples.types';
 
+type TransitionFormModel = {
+  estimatedDate: Date | null;
+  observation: string;
+  resolution: 'Aprobada' | 'Rechazada' | 'Mas plazo';
+};
+
 @Component({
   selector: 'app-sample-transition-dialog',
-  imports: [FormsModule, MatDatepickerModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [FormField, MatDatepickerModule, MatFormFieldModule, MatIconModule, MatInputModule],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'es-AR' }, provideNativeDateAdapter()],
   templateUrl: './sample-transition-dialog.html',
 })
@@ -20,12 +26,22 @@ export class SampleTransitionDialog implements OnInit {
   readonly closed = output<void>();
   readonly confirmed = output<SampleTransitionPayload>();
 
-  readonly estimatedDate = signal<Date | null>(null);
-  readonly observation = signal('');
-  readonly resolution = signal<'Aprobada' | 'Rechazada' | 'Mas plazo'>('Aprobada');
+  readonly transitionModel = signal<TransitionFormModel>({
+    estimatedDate: null,
+    observation: '',
+    resolution: 'Aprobada',
+  });
 
   readonly isEvaluation = computed(() => this.item().status === 'Entregado');
-  readonly requiresDate = computed(() => !this.isEvaluation() || this.resolution() === 'Mas plazo');
+  readonly requiresDate = computed(
+    () => !this.isEvaluation() || this.transitionModel().resolution === 'Mas plazo',
+  );
+  readonly transitionForm = form(this.transitionModel, (fields) => {
+    required(fields.estimatedDate, {
+      message: 'Seleccione una fecha.',
+      when: () => this.requiresDate(),
+    });
+  });
   readonly title = computed(() => {
     const titles: Record<SampleOrderItem['status'], string> = {
       Pedido: 'Marcar muestra como enviada',
@@ -60,12 +76,12 @@ export class SampleTransitionDialog implements OnInit {
 
   ngOnInit(): void {
     if (this.item().status === 'Recibido') {
-      this.estimatedDate.set(this.addDays(new Date(), 5));
+      this.transitionForm.estimatedDate().value.set(this.addDays(new Date(), 5));
     }
   }
 
   selectResolution(value: 'Aprobada' | 'Rechazada' | 'Mas plazo'): void {
-    this.resolution.set(value);
+    this.transitionForm.resolution().value.set(value);
     if (value !== 'Mas plazo') {
       return;
     }
@@ -73,18 +89,19 @@ export class SampleTransitionDialog implements OnInit {
     const currentFollowUp = this.parseDisplayDate(this.item().followUpAt);
     const baseDate =
       currentFollowUp && currentFollowUp.getTime() > Date.now() ? currentFollowUp : new Date();
-    this.estimatedDate.set(this.addDays(baseDate, 5));
+    this.transitionForm.estimatedDate().value.set(this.addDays(baseDate, 5));
   }
 
   submit(): void {
-    if (this.requiresDate() && !this.estimatedDate()) {
+    if (this.transitionForm().invalid()) {
       return;
     }
 
+    const value = this.transitionModel();
     this.confirmed.emit({
-      estimatedDate: this.toInputDate(this.estimatedDate()),
-      observation: this.observation().trim(),
-      resolution: this.isEvaluation() ? this.resolution() : undefined,
+      estimatedDate: this.toInputDate(value.estimatedDate),
+      observation: value.observation.trim(),
+      resolution: this.isEvaluation() ? value.resolution : undefined,
     });
   }
 

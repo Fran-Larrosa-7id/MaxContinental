@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Service, signal } from '@angular/core';
 import {
   AppRole,
   SampleCartItem,
@@ -145,9 +145,7 @@ const INITIAL_ORDERS: SampleOrder[] = [
   },
 ];
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SampleOrdersService {
   private readonly cartState = signal<SampleCartItem[]>([]);
   private readonly ordersState = signal<SampleOrder[]>(INITIAL_ORDERS);

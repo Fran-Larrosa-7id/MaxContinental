@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { AppRole } from './sample-orders.models';
 
 export type MockSessionUser = {
@@ -22,9 +22,7 @@ const MOCK_SESSIONS: MockSessionUser[] = [
   },
 ];
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SessionService {
   readonly availableUsers = MOCK_SESSIONS;
   readonly currentUser = signal<MockSessionUser>(MOCK_SESSIONS[0]);

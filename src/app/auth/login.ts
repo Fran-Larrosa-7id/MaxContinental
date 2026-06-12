@@ -1,21 +1,36 @@
-import { Component, computed, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, signal } from '@angular/core';
+import { form, FormField, required } from '@angular/forms/signals';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 
+type LoginModel = {
+  user: string;
+  password: string;
+};
+
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, MatIconModule],
+  imports: [FormField, MatIconModule],
   templateUrl: './login.html',
 })
 export class Login {
-  readonly user = signal('APARRA');
-  readonly password = signal('');
-  readonly canSubmit = computed(() => this.user().trim().length > 0);
+  readonly loginModel = signal<LoginModel>({
+    user: 'CBOHN',
+    password: '',
+  });
+  readonly loginForm = form(this.loginModel, (fields) => {
+    required(fields.user, { message: 'Ingrese su usuario.' });
+    required(fields.password, { message: 'Ingrese su contraseña.' });
+  });
 
   constructor(private readonly router: Router) {}
 
-  login(): void {
+  login(event: SubmitEvent): void {
+    event.preventDefault();
+    if (this.loginForm().invalid()) {
+      return;
+    }
+
     this.router.navigateByUrl('/app/clientes');
   }
 }

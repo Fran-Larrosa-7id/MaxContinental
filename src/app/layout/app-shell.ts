@@ -1,4 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import {
   ActivatedRoute,
@@ -8,9 +9,9 @@ import {
   RouterLinkActive,
   RouterOutlet,
 } from '@angular/router';
-import { filter } from 'rxjs';
-import { SessionService } from '../core/session.service';
+import { filter, map, startWith } from 'rxjs';
 import { SampleOrdersService } from '../core/sample-orders.service';
+import { SessionService } from '../core/session.service';
 import { VisitContextService } from '../core/visit-context.service';
 
 type NavItem = {
@@ -29,6 +30,17 @@ export class AppShell {
   private readonly visitContext = inject(VisitContextService);
   private readonly session = inject(SessionService);
   private readonly ordersService = inject(SampleOrdersService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+      startWith(this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
 
   readonly navItems: NavItem[] = [
     { label: 'Clientes', mobileLabel: 'Clientes', icon: 'groups', path: '/app/clientes' },
@@ -42,30 +54,19 @@ export class AppShell {
     },
   ];
 
-  readonly routeTitle = signal('Clientes');
   readonly activeClient = this.visitContext.activeClient;
   readonly currentUser = this.session.currentUser;
   readonly availableUsers = this.session.availableUsers;
   readonly pageTitle = computed(() => {
     const client = this.activeClient();
-    return client ? `Visitando: ${client.name}` : this.routeTitle();
+    return client ? `Visitando: ${client.name}` : this.titleForUrl(this.currentUrl());
   });
 
-  constructor(
-    private readonly router: Router,
-    private readonly route: ActivatedRoute,
-  ) {
+  constructor() {
     const clientId = this.route.snapshot.paramMap.get('clientId');
     if (clientId) {
       this.visitContext.startById(clientId);
     }
-
-    this.setPageTitle(this.router.url);
-    this.router.events
-      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-      .subscribe((event) => {
-        this.setPageTitle(event.urlAfterRedirects);
-      });
   }
 
   finishVisit(): void {
@@ -88,22 +89,16 @@ export class AppShell {
     this.router.navigateByUrl('/login');
   }
 
-  private setPageTitle(url: string): void {
+  private titleForUrl(url: string): string {
     if (url.includes('/articulos')) {
-      this.routeTitle.set('Artículos');
-      return;
+      return 'Artículos';
     }
-
     if (url.includes('/muestras')) {
-      this.routeTitle.set('Gestión de Muestras');
-      return;
+      return 'Gestión de Muestras';
     }
-
     if (url.includes('/tablero')) {
-      this.routeTitle.set('Tablero de Control');
-      return;
+      return 'Tablero de Control';
     }
-
-    this.routeTitle.set('Clientes');
+    return 'Clientes';
   }
 }

@@ -1,10 +1,8 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Service, signal } from '@angular/core';
 import { MOCK_CLIENTS } from '../features/samples/samples.mock';
 import { MockClient } from '../features/samples/samples.types';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class VisitContextService {
   private readonly selectedClient = signal<MockClient | null>(null);
 
