@@ -66,6 +66,68 @@ button:disabled {
   border-radius: 999px;
 }
 
+.mc-date-field {
+  --mat-form-field-outlined-container-shape: 8px;
+  --mat-form-field-outlined-outline-color: #d7e0eb;
+  --mat-form-field-outlined-hover-outline-color: #7892b3;
+  --mat-form-field-outlined-focus-outline-color: #315b93;
+  --mat-form-field-container-height: 52px;
+  --mat-form-field-container-vertical-padding: 13px;
+}
+
+.mc-date-field .mat-mdc-form-field-flex {
+  background: linear-gradient(135deg, rgb(248 250 252 / 96%), rgb(239 246 255 / 84%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%);
+}
+
+.mc-date-field .mat-mdc-form-field-icon-prefix {
+  padding-left: 2px;
+  color: #45658f;
+}
+
+.mc-date-field input {
+  cursor: pointer;
+  color: #082653;
+  font-weight: 700;
+}
+
+.mc-date-picker {
+  --mat-datepicker-calendar-container-shape: 12px;
+  --mat-datepicker-calendar-container-background-color: rgb(255 255 255 / 94%);
+  --mat-datepicker-calendar-container-text-color: #082653;
+  --mat-datepicker-calendar-date-selected-state-background-color: #315b93;
+  --mat-datepicker-calendar-date-selected-state-text-color: #fff;
+  --mat-datepicker-calendar-date-hover-state-background-color: #e4edf8;
+  --mat-datepicker-calendar-date-focus-state-background-color: #d6e4f4;
+}
+
+.mc-date-picker .mat-datepicker-content {
+  border: 1px solid rgb(255 255 255 / 76%);
+  box-shadow: 0 22px 60px rgb(15 35 65 / 24%);
+  backdrop-filter: blur(18px);
+}
+
+.mc-date-picker .mat-calendar {
+  width: min(320px, calc(100vw - 24px));
+}
+
+.mc-date-picker .mat-calendar-header {
+  padding: 14px 14px 4px;
+}
+
+.mc-date-picker .mat-calendar-controls {
+  margin: 2px 4px 8px;
+}
+
+.mc-date-picker .mat-calendar-period-button {
+  color: #082653;
+  font-weight: 800;
+}
+
+.mc-date-picker .mat-calendar-body-selected {
+  box-shadow: 0 6px 14px rgb(49 91 147 / 32%);
+}
+
 @keyframes mc-overlay-in {
   from {
     opacity: 0;

@@ -37,17 +37,29 @@
     }
 
     @if (requiresDate()) {
-      <label class="block">
-        <span class="mb-1.5 block text-xs font-black uppercase text-slate-500">
+      <div>
+        <span class="mb-2 block text-xs font-black uppercase text-slate-500">
           {{ dateLabel() }}
         </span>
-        <input
-          type="date"
-          class="h-11 w-full rounded-md border border-slate-200 px-3 outline-none transition focus:border-[#45658f]"
-          [ngModel]="estimatedDate()"
-          (ngModelChange)="estimatedDate.set($event)"
-        />
-      </label>
+        <mat-form-field appearance="outline" class="mc-date-field w-full" subscriptSizing="dynamic">
+          <mat-icon matPrefix>event</mat-icon>
+          <input
+            matInput
+            readonly
+            [matDatepicker]="datePicker"
+            [ngModel]="estimatedDate()"
+            (dateChange)="estimatedDate.set($event.value)"
+            (click)="datePicker.open()"
+            placeholder="Seleccionar fecha"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+          <mat-datepicker #datePicker panelClass="mc-date-picker" startView="month" />
+        </mat-form-field>
+        <p class="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+          <mat-icon class="!text-[15px]">touch_app</mat-icon>
+          Toque el campo para elegir una fecha
+        </p>
+      </div>
     }
 
     @if (automaticDateMessage()) {

@@ -1,12 +1,17 @@
 import { Component, computed, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { SampleOrderItem, SampleTransitionPayload } from '../../core/sample-orders.models';
 import { MockSupply } from '../../features/samples/samples.types';
 
 @Component({
   selector: 'app-sample-transition-dialog',
-  imports: [FormsModule, MatIconModule],
+  imports: [FormsModule, MatDatepickerModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'es-AR' }, provideNativeDateAdapter()],
   templateUrl: './sample-transition-dialog.html',
 })
 export class SampleTransitionDialog implements OnInit {
@@ -15,7 +20,7 @@ export class SampleTransitionDialog implements OnInit {
   readonly closed = output<void>();
   readonly confirmed = output<SampleTransitionPayload>();
 
-  readonly estimatedDate = signal('');
+  readonly estimatedDate = signal<Date | null>(null);
   readonly observation = signal('');
   readonly resolution = signal<'Aprobada' | 'Rechazada' | 'Mas plazo'>('Aprobada');
 
@@ -55,7 +60,7 @@ export class SampleTransitionDialog implements OnInit {
 
   ngOnInit(): void {
     if (this.item().status === 'Recibido') {
-      this.estimatedDate.set(this.addDaysToInputDate(new Date(), 5));
+      this.estimatedDate.set(this.addDays(new Date(), 5));
     }
   }
 
@@ -68,7 +73,7 @@ export class SampleTransitionDialog implements OnInit {
     const currentFollowUp = this.parseDisplayDate(this.item().followUpAt);
     const baseDate =
       currentFollowUp && currentFollowUp.getTime() > Date.now() ? currentFollowUp : new Date();
-    this.estimatedDate.set(this.addDaysToInputDate(baseDate, 5));
+    this.estimatedDate.set(this.addDays(baseDate, 5));
   }
 
   submit(): void {
@@ -77,7 +82,7 @@ export class SampleTransitionDialog implements OnInit {
     }
 
     this.confirmed.emit({
-      estimatedDate: this.estimatedDate(),
+      estimatedDate: this.toInputDate(this.estimatedDate()),
       observation: this.observation().trim(),
       resolution: this.isEvaluation() ? this.resolution() : undefined,
     });
@@ -91,9 +96,18 @@ export class SampleTransitionDialog implements OnInit {
     return new Date(year, month - 1, day);
   }
 
-  private addDaysToInputDate(date: Date, days: number): string {
+  private addDays(date: Date, days: number): Date {
     const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     result.setDate(result.getDate() + days);
+    return result;
+  }
+
+  private toInputDate(date: Date | null): string {
+    if (!date) {
+      return '';
+    }
+
+    const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const year = result.getFullYear();
     const month = String(result.getMonth() + 1).padStart(2, '0');
     const day = String(result.getDate()).padStart(2, '0');
