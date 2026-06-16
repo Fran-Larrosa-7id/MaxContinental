@@ -39,6 +39,17 @@ export class SampleTransitionDialog implements OnInit {
   readonly requiresObservation = computed(
     () => this.isEvaluation() && this.transitionModel().resolution !== 'Mas plazo',
   );
+  readonly followUpHardLimitDate = computed(() => {
+    const deliveredAt = this.parseDisplayDate(this.item().deliveredAt);
+    return deliveredAt ? this.addDays(deliveredAt, 15) : null;
+  });
+  readonly isFollowUpExpired = computed(() => {
+    const deadline = this.minimumDateOrNull(
+      this.parseDisplayDate(this.item().followUpMaxAt),
+      this.followUpHardLimitDate(),
+    );
+    return Boolean(deadline && this.isOverdue(deadline));
+  });
   readonly transitionForm = form(this.transitionModel, (fields) => {
     required(fields.estimatedDate, {
       message: 'Seleccione una fecha.',
@@ -70,12 +81,13 @@ export class SampleTransitionDialog implements OnInit {
     return 'Fecha máxima de seguimiento';
   });
   readonly maximumDate = computed(() =>
-    this.item().status === 'Recibido' ||
-    (this.item().status === 'Entregado' && this.transitionModel().resolution === 'Mas plazo')
-      ? this.addDays(new Date(), 15)
-      : null,
+    this.maximumAllowedDate(),
   );
   readonly automaticDateMessage = computed(() => {
+    if (this.item().status === 'Entregado' && this.isFollowUpExpired()) {
+      return 'El plazo máximo ya fue superado. Para finalizar el seguimiento, registre si la muestra fue aprobada o rechazada.';
+    }
+
     const messages: Record<SampleOrderItem['status'], string> = {
       Pedido: 'La fecha del pedido se registró automáticamente al crearlo.',
       Enviado: 'La fecha de recepción se registrará automáticamente al confirmar.',
@@ -96,6 +108,10 @@ export class SampleTransitionDialog implements OnInit {
   }
 
   selectResolution(value: 'Aprobada' | 'Rechazada' | 'Mas plazo'): void {
+    if (value === 'Mas plazo' && this.isFollowUpExpired()) {
+      return;
+    }
+
     this.transitionForm.resolution().value.set(value);
     if (value !== 'Mas plazo') {
       return;
@@ -104,9 +120,7 @@ export class SampleTransitionDialog implements OnInit {
     const currentFollowUp = this.parseDisplayDate(this.item().followUpMaxAt);
     const baseDate =
       currentFollowUp && currentFollowUp.getTime() > Date.now() ? currentFollowUp : new Date();
-    this.transitionForm.estimatedDate().value.set(
-      this.minimumDate(this.addDays(baseDate, 5), this.addDays(new Date(), 15)),
-    );
+    this.transitionForm.estimatedDate().value.set(this.clampFollowUpDate(this.addDays(baseDate, 5)));
   }
 
   submit(): void {
@@ -136,8 +150,38 @@ export class SampleTransitionDialog implements OnInit {
     return result;
   }
 
+  private maximumAllowedDate(): Date | null {
+    if (this.item().status === 'Recibido') {
+      return this.addDays(new Date(), 15);
+    }
+    if (this.item().status === 'Entregado' && this.transitionModel().resolution === 'Mas plazo') {
+      return this.followUpHardLimitDate();
+    }
+    return null;
+  }
+
+  private clampFollowUpDate(date: Date): Date {
+    const hardLimit = this.followUpHardLimitDate();
+    return hardLimit ? this.minimumDate(date, hardLimit) : date;
+  }
+
   private minimumDate(first: Date, second: Date): Date {
     return first.getTime() <= second.getTime() ? first : second;
+  }
+
+  private minimumDateOrNull(first: Date | null, second: Date | null): Date | null {
+    if (!first) {
+      return second;
+    }
+    if (!second) {
+      return first;
+    }
+    return this.minimumDate(first, second);
+  }
+
+  private isOverdue(date: Date): boolean {
+    const deadline = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+    return deadline.getTime() < Date.now();
   }
 
   private toInputDate(date: Date | null): string {

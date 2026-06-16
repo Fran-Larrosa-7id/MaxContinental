@@ -386,18 +386,19 @@ export class SampleOrdersService {
     }
 
     if (item.status === 'Entregado') {
-      if (this.isOverdue(item.followUpMaxAt)) {
+      const deadline = this.effectiveFollowUpDeadline(item);
+      if (this.isOverdue(deadline)) {
         return {
           tone: 'red',
           label: 'Seguimiento vencido',
-          message: `El plazo máximo finalizó el ${item.followUpMaxAt}.`,
+          message: `El plazo máximo finalizó el ${deadline}.`,
         };
       }
 
       return {
         tone: 'orange',
         label: 'Seguimiento activo',
-        message: `Resolver antes del ${item.followUpMaxAt}.`,
+        message: `Resolver antes del ${deadline}.`,
       };
     }
 
@@ -442,17 +443,26 @@ export class SampleOrdersService {
       };
     }
     if (item.status === 'Recibido') {
+      const followUpMaxAt = this.clampFollowUpDate(estimatedDate, automaticDate);
       return {
         ...item,
         status: 'Entregado',
         deliveredAt: automaticDate,
-        followUpMaxAt: estimatedDate,
+        followUpMaxAt,
       };
     }
     if (item.status === 'Entregado' && payload.resolution === 'Mas plazo') {
+      const deadline = this.effectiveFollowUpDeadline(item);
+      if (this.isOverdue(deadline)) {
+        return {
+          ...item,
+          feedback: payload.observation || item.feedback,
+        };
+      }
+
       return {
         ...item,
-        followUpMaxAt: estimatedDate,
+        followUpMaxAt: this.clampFollowUpDate(estimatedDate, item.deliveredAt),
         feedback: payload.observation || item.feedback,
       };
     }
@@ -483,13 +493,50 @@ export class SampleOrdersService {
     return payload.observation ? `${prefix} ${payload.observation}` : prefix;
   }
 
+  private effectiveFollowUpDeadline(item: SampleOrderItem): string | null {
+    return this.minimumDisplayDate(
+      item.followUpMaxAt,
+      item.deliveredAt ? this.addDaysDisplayDate(item.deliveredAt, 15) : null,
+    );
+  }
+
+  private clampFollowUpDate(value: string | null, deliveredAt: string | null): string | null {
+    return this.minimumDisplayDate(
+      value,
+      deliveredAt ? this.addDaysDisplayDate(deliveredAt, 15) : null,
+    );
+  }
+
+  private minimumDisplayDate(first: string | null, second: string | null): string | null {
+    if (!first) {
+      return second;
+    }
+    if (!second) {
+      return first;
+    }
+    return this.parseDisplayDate(first).getTime() <= this.parseDisplayDate(second).getTime()
+      ? first
+      : second;
+  }
+
+  private addDaysDisplayDate(value: string, days: number): string {
+    const date = this.parseDisplayDate(value);
+    date.setDate(date.getDate() + days);
+    return this.formatDate(date);
+  }
+
   private isOverdue(value: string | null): boolean {
     if (!value) {
       return false;
     }
-    const [day, month, year] = value.split('/').map(Number);
-    const deadline = new Date(year, month - 1, day, 23, 59, 59, 999);
+    const deadline = this.parseDisplayDate(value);
+    deadline.setHours(23, 59, 59, 999);
     return deadline.getTime() < Date.now();
+  }
+
+  private parseDisplayDate(value: string): Date {
+    const [day, month, year] = value.split('/').map(Number);
+    return new Date(year, month - 1, day);
   }
 
   private fromInputDate(value?: string): string | null {

@@ -27,12 +27,20 @@
               [class.text-[#203f75]]="transitionModel().resolution === option"
               [class.shadow-sm]="transitionModel().resolution === option"
               [class.text-slate-500]="transitionModel().resolution !== option"
+              [class.opacity-40]="option === 'Mas plazo' && isFollowUpExpired()"
+              [class.cursor-not-allowed]="option === 'Mas plazo' && isFollowUpExpired()"
+              [disabled]="option === 'Mas plazo' && isFollowUpExpired()"
               (click)="selectResolution($any(option))"
             >
               {{ option === 'Mas plazo' ? 'Más plazo' : option }}
             </button>
           }
         </div>
+        @if (isFollowUpExpired()) {
+          <p class="mt-2 text-xs font-medium text-red-600">
+            El plazo máximo ya venció; solo puede cerrar el seguimiento.
+          </p>
+        }
       </fieldset>
     }
 
