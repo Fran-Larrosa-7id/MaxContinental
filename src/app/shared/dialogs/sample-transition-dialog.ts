@@ -56,14 +56,14 @@ export class SampleTransitionDialog implements OnInit {
       when: () => this.requiresDate(),
     });
     required(fields.observation, {
-      message: 'Agregue una observación para cerrar el seguimiento.',
+      message: 'Agregue una observacion para cerrar el seguimiento.',
       when: () => this.requiresObservation(),
     });
   });
   readonly title = computed(() => {
     const titles: Record<SampleOrderItem['status'], string> = {
       Pedido: 'Marcar muestra como enviada',
-      Enviado: 'Confirmar recepción',
+      Enviado: 'Confirmar recepcion',
       Recibido: 'Confirmar entrega',
       Entregado: 'Evaluar muestra',
       Aprobada: 'Muestra aprobada',
@@ -73,28 +73,26 @@ export class SampleTransitionDialog implements OnInit {
   });
   readonly dateLabel = computed(() => {
     if (this.item().status === 'Pedido') {
-      return 'Fecha estimada de recepción';
+      return 'Fecha estimada de recepcion';
     }
     if (this.item().status === 'Enviado') {
       return 'Fecha de visita al cliente';
     }
-    return 'Fecha máxima de seguimiento';
+    return 'Fecha limite de seguimiento';
   });
-  readonly maximumDate = computed(() =>
-    this.maximumAllowedDate(),
-  );
+  readonly maximumDate = computed(() => this.maximumAllowedDate());
   readonly automaticDateMessage = computed(() => {
     if (this.item().status === 'Entregado' && this.isFollowUpExpired()) {
-      return 'El plazo máximo ya fue superado. Para finalizar el seguimiento, registre si la muestra fue aprobada o rechazada.';
+      return 'El plazo maximo ya fue superado. Para finalizar el seguimiento, registre si la muestra fue aprobada o rechazada.';
     }
 
     const messages: Record<SampleOrderItem['status'], string> = {
-      Pedido: 'La fecha del pedido se registró automáticamente al crearlo.',
-      Enviado: 'La fecha de recepción se registrará automáticamente al confirmar.',
+      Pedido: 'La fecha del pedido se registro automaticamente al crearlo.',
+      Enviado: 'La fecha de recepcion se registrara automaticamente al confirmar.',
       Recibido:
-        'La fecha de entrega se registrará automáticamente. Puede definir un seguimiento de hasta 15 días.',
+        'La entrega se registra hoy automaticamente. Esta fecha define el plazo limite para evaluar la muestra.',
       Entregado:
-        'El plazo puede extenderse hasta un máximo de 15 días. El feedback quedará guardado en el historial.',
+        'El plazo puede extenderse hasta un maximo de 15 dias. El feedback quedara guardado en el historial.',
       Aprobada: '',
       Rechazada: '',
     };
