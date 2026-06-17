@@ -6,7 +6,7 @@ export type SampleOrderStatus =
   | 'Aprobada'
   | 'Rechazada';
 
-export type AppRole = 'Vendedor' | 'Coordinador';
+export type AppRole = 'Vendedor' | 'Coordinador' | 'Jefe';
 
 export type SampleCartItem = {
   supplyId: string;

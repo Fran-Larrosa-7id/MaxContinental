@@ -25,6 +25,7 @@ export class ArticlesPage {
   readonly currentUser = this.session.currentUser;
   readonly cart = this.ordersService.cart;
   readonly cartCount = this.ordersService.cartCount;
+  readonly cartLines = computed(() => this.cart().length);
   readonly canCreateSample = computed(
     () => this.currentUser().role === 'Vendedor' && Boolean(this.activeClient()),
   );
@@ -63,7 +64,7 @@ export class ArticlesPage {
       !this.ordersService.confirmOrder(
         clientId,
         currentUser.role === 'Vendedor' ? currentUser.id : 'user-cristian',
-        currentUser.role === 'Coordinador' ? currentUser.id : currentUser.coordinatorId,
+        currentUser.coordinatorId,
       )
     ) {
       return;

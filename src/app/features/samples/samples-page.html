@@ -23,7 +23,13 @@
       class="hidden w-fit items-center gap-2 rounded-md border border-white/70 bg-white/60 px-3 py-2 text-xs font-black uppercase text-[#203f75] sm:inline-flex"
     >
       <mat-icon class="!text-[18px]">
-        {{ currentUser().role === 'Coordinador' ? 'supervisor_account' : 'badge' }}
+        {{
+          currentUser().role === 'Jefe'
+            ? 'leaderboard'
+            : currentUser().role === 'Coordinador'
+              ? 'supervisor_account'
+              : 'badge'
+        }}
       </mat-icon>
       Vista {{ currentUser().role }}
     </span>
@@ -36,7 +42,7 @@
           <div>
             <h2 class="text-xl font-black sm:text-2xl">Muestras activas</h2>
             <p class="mt-0.5 hidden text-sm text-slate-500 sm:block">
-              Cada artículo avanza de forma independiente dentro de su pedido.
+              Seguimiento comercial de pedidos, entregas y feedback del cliente.
             </p>
           </div>
 
@@ -72,10 +78,17 @@
 
         @if (activeClient(); as client) {
           <div
-            class="mb-3 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 sm:mb-4 sm:px-4 sm:py-3 sm:text-sm"
+            class="mb-3 grid gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 sm:mb-4 sm:grid-cols-[1fr_auto] sm:items-center sm:px-4 sm:py-3 sm:text-sm"
           >
-            <mat-icon class="!text-[19px]">filter_alt</mat-icon>
-            Mostrando muestras de <strong>{{ client.name }}</strong>
+            <div class="flex min-w-0 items-center gap-2">
+              <mat-icon class="!text-[19px]">handshake</mat-icon>
+              <span class="min-w-0 truncate">
+                Gestion comercial activa para <strong>{{ client.name }}</strong>
+              </span>
+            </div>
+            <span class="hidden rounded-full bg-white px-3 py-1 text-xs font-black sm:inline-flex">
+              Solo muestras de este cliente
+            </span>
           </div>
         }
 
@@ -524,7 +537,9 @@
         <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 class="text-2xl font-black">Muestras resueltas</h2>
-            <p class="mt-1 text-sm text-slate-500">Resultados y feedback del cliente.</p>
+            <p class="mt-1 text-sm text-slate-500">
+              Cierres comerciales con la observacion registrada por el vendedor.
+            </p>
           </div>
           <div class="grid grid-cols-2 rounded-md bg-slate-100 p-1">
             <button

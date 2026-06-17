@@ -2,6 +2,7 @@ import { Component, computed, inject, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { SampleOrdersService } from '../../core/sample-orders.service';
+import { VisitContextService } from '../../core/visit-context.service';
 import { MOCK_SUPPLIES } from '../../features/samples/samples.mock';
 import { MockSupply } from '../../features/samples/samples.types';
 
@@ -12,11 +13,13 @@ import { MockSupply } from '../../features/samples/samples.types';
 })
 export class SampleCartDialog {
   private readonly ordersService = inject(SampleOrdersService);
+  private readonly visitContext = inject(VisitContextService);
 
   readonly closed = output<void>();
   readonly continueShopping = output<void>();
   readonly confirmed = output<void>();
   readonly cart = this.ordersService.cart;
+  readonly activeClient = this.visitContext.activeClient;
   readonly cartCount = this.ordersService.cartCount;
   readonly totalLines = computed(() => this.cart().length);
 

@@ -202,7 +202,7 @@ export const MOCK_CLIENT_SUPPLY_IDS: Record<string, string[]> = {
 };
 
 export const MOCK_USERS: MockUser[] = [
-  { id: 'user-arnaldo', name: 'Arnaldo Parra', role: 'Jefe de Ventas' },
+  { id: 'user-arnaldo', name: 'Arnaldo Parra', role: 'Jefe' },
   { id: 'user-ignacio', name: 'Ignacio Prevostini', role: 'Team Leader' },
   { id: 'user-cristian', name: 'Cristian Bohn', role: 'Vendedor', isSeller: true },
   { id: 'user-luis', name: 'Luis Benedicti', role: 'Vendedor', isSeller: true },

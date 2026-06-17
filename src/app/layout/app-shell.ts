@@ -42,23 +42,50 @@ export class AppShell {
     { initialValue: this.router.url },
   );
 
-  readonly navItems: NavItem[] = [
-    { label: 'Nueva Muestra', mobileLabel: 'Nueva Muestra', icon: 'groups', path: '/app/clientes' },
-    { label: 'Muestras', mobileLabel: 'Muestras', icon: 'science', path: '/app/muestras' },
-    {
-      label: 'Tablero de Control',
-      mobileLabel: 'Tablero',
-      icon: 'pie_chart',
-      path: '/app/tablero',
-    },
-  ];
-
   readonly activeClient = this.visitContext.activeClient;
   readonly currentUser = this.session.currentUser;
-  readonly availableUsers = this.session.availableUsers;
+  readonly cartCount = this.ordersService.cartCount;
+  readonly homePath = computed(() =>
+    this.currentUser().role === 'Vendedor' ? '/app/clientes' : '/app/muestras',
+  );
+  readonly navItems = computed<NavItem[]>(() => {
+    const commonItems: NavItem[] = [
+      { label: 'Muestras', mobileLabel: 'Muestras', icon: 'science', path: '/app/muestras' },
+      {
+        label: 'Tablero de Control',
+        mobileLabel: 'Tablero',
+        icon: 'pie_chart',
+        path: '/app/tablero',
+      },
+    ];
+
+    if (this.currentUser().role !== 'Vendedor') {
+      return commonItems;
+    }
+
+    return [
+      {
+        label: 'Nueva Muestra',
+        mobileLabel: 'Nueva',
+        icon: 'groups',
+        path: '/app/clientes',
+      },
+      ...commonItems,
+    ];
+  });
   readonly pageTitle = computed(() => {
     const client = this.activeClient();
-    return client ? `Visitando: ${client.name}` : this.titleForUrl(this.currentUrl());
+    return client ? `Modo venta: ${client.name}` : this.titleForUrl(this.currentUrl());
+  });
+  readonly visitStep = computed(() => {
+    const url = this.currentUrl();
+    if (url.includes('/articulos')) {
+      return 'Catalogo';
+    }
+    if (url.includes('/muestras')) {
+      return 'Seguimiento';
+    }
+    return 'Seleccion';
   });
 
   constructor() {
@@ -76,28 +103,22 @@ export class AppShell {
     }
   }
 
-  changeSession(userId: string): void {
-    this.visitContext.finish();
-    this.ordersService.clearCart();
-    this.session.selectUser(userId);
-    this.router.navigateByUrl('/app/clientes');
-  }
-
   logout(): void {
     this.visitContext.finish();
+    this.ordersService.clearCart();
     this.router.navigateByUrl('/login');
   }
 
   private titleForUrl(url: string): string {
     if (url.includes('/articulos')) {
-      return 'Artículos';
+      return 'Articulos';
     }
     if (url.includes('/muestras')) {
-      return 'Gestión de Muestras';
+      return 'Gestion de Muestras';
     }
     if (url.includes('/tablero')) {
       return 'Tablero de Control';
     }
-    return 'Clientes';
+    return 'Nueva Muestra';
   }
 }

@@ -24,7 +24,7 @@ export class ClientsPage {
     const term = this.query().trim().toLowerCase();
     const currentUser = this.session.currentUser();
     return this.clients.filter((client) => {
-      const matchesOwner = currentUser.role === 'Coordinador' || client.sellerId === currentUser.id;
+      const matchesOwner = client.sellerId === currentUser.id;
       const matchesTerm =
         !term ||
         client.name.toLowerCase().includes(term) ||
@@ -35,7 +35,11 @@ export class ClientsPage {
     });
   });
 
-  constructor(private readonly router: Router) {}
+  constructor(private readonly router: Router) {
+    if (this.session.currentUser().role !== 'Vendedor') {
+      this.router.navigateByUrl('/app/muestras');
+    }
+  }
 
   selectClient(client: MockClient): void {
     this.visitContext.start(client);

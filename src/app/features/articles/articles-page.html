@@ -1,17 +1,19 @@
 <main class="mx-auto w-full max-w-[1320px] px-4 py-7 sm:px-8" data-aos="fade-up">
   <section class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <h2 class="text-2xl font-black">Artículos</h2>
+      <h2 class="text-2xl font-black">Catalogo de articulos</h2>
       @if (activeClient(); as client) {
-        <p class="mt-1 text-sm text-slate-500">Catálogo disponible para {{ client.name }}.</p>
-        @if (currentUser().role === 'Coordinador') {
+        <p class="mt-1 text-sm text-slate-500">
+          Armando una muestra para <strong>{{ client.name }}</strong>.
+        </p>
+        @if (currentUser().role !== 'Vendedor') {
           <p class="mt-1 text-sm font-medium text-amber-700">
-            El pedido de muestras está disponible únicamente para vendedores.
+            La carga de muestras esta disponible unicamente para vendedores.
           </p>
         }
       } @else {
         <p class="mt-1 text-sm text-amber-700">
-          Seleccione un cliente para comenzar un pedido de muestras.
+          Seleccione un cliente para comenzar una solicitud de muestra.
         </p>
       }
     </div>
@@ -19,13 +21,34 @@
     @if (cartCount() > 0) {
       <button
         type="button"
-        class="mc-selection-alert flex h-10 items-center justify-center gap-2 rounded-md bg-[#203f75] px-4 text-sm font-bold text-white shadow-md transition hover:bg-[#162e59]"
+        class="mc-selection-alert flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md bg-[#203f75] px-4 text-sm font-bold text-white shadow-md transition hover:bg-[#162e59]"
         (click)="isCartOpen.set(true)"
       >
-        <mat-icon class="!text-[19px]">shopping_cart</mat-icon>
-        Ver muestra ({{ cartCount() }})
+        <mat-icon class="!text-[19px]">assignment</mat-icon>
+        Revisar solicitud ({{ cartCount() }})
       </button>
     }
+  </section>
+
+  <section
+    class="mb-5 grid gap-3 rounded-lg border border-blue-100 bg-white p-3 shadow-sm sm:grid-cols-[1fr_auto] sm:items-center sm:p-4"
+  >
+    <div class="min-w-0">
+      <p class="text-xs font-black uppercase tracking-wide text-[#45658f]">
+        Preparacion de muestra
+      </p>
+      <p class="mt-1 text-sm text-slate-500">
+        Seleccione articulos, defina cantidades y confirme para notificar a coordinacion.
+      </p>
+    </div>
+    <div class="grid grid-cols-2 gap-2 text-xs font-bold sm:w-[260px]">
+      <span class="rounded-md bg-slate-50 px-3 py-2 text-slate-600">
+        {{ cartLines() }} articulos
+      </span>
+      <span class="rounded-md bg-green-50 px-3 py-2 text-green-800">
+        {{ cartCount() }} unidades
+      </span>
+    </div>
   </section>
 
   <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
@@ -35,7 +58,7 @@
       </mat-icon>
       <input
         class="h-10 w-full rounded-md border border-slate-200 pl-10 pr-3 outline-none transition focus:border-[#3e5f8b]"
-        placeholder="Buscar por nombre, descripción o marca..."
+        placeholder="Buscar por nombre, descripcion o marca..."
         [ngModel]="query()"
         (ngModelChange)="query.set($event)"
       />
@@ -47,8 +70,8 @@
       class="hidden grid-cols-[1fr_1.5fr_190px] gap-5 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-500 md:grid"
     >
       <span>Nombre</span>
-      <span>Descripción</span>
-      <span class="text-right">Acción</span>
+      <span>Descripcion</span>
+      <span class="text-right">Accion</span>
     </div>
 
     @for (article of filteredArticles(); track article.id) {
@@ -67,7 +90,7 @@
 
         <div>
           <span class="block text-xs font-black uppercase tracking-wider text-slate-400 md:hidden">
-            Descripción
+            Descripcion
           </span>
           <p class="text-sm leading-relaxed text-slate-600">{{ article.description }}</p>
         </div>
@@ -75,18 +98,18 @@
         <div class="md:text-right">
           <button
             type="button"
-            class="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f] disabled:cursor-not-allowed disabled:opacity-45 md:w-auto"
+            class="inline-flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-[#45658f] px-4 text-sm font-bold text-white transition hover:bg-[#31547f] disabled:cursor-not-allowed disabled:opacity-45 md:w-auto"
             [disabled]="!canCreateSample()"
             (click)="addToSample(article.id)"
           >
-            <mat-icon class="!text-[18px]">add_shopping_cart</mat-icon>
-            Agregar a muestra
+            <mat-icon class="!text-[18px]">add_circle</mat-icon>
+            Pedir muestra
           </button>
         </div>
       </article>
     } @empty {
       <div class="px-5 py-12 text-center text-slate-500">
-        No hay artículos disponibles para los filtros actuales.
+        No hay articulos disponibles para los filtros actuales.
       </div>
     }
   </section>

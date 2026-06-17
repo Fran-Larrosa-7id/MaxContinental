@@ -13,6 +13,7 @@ export type StatusFilter = 'Todos los estados' | SampleStatus;
 
 export type UserRole =
   | 'Admin'
+  | 'Jefe'
   | 'Jefe de Ventas'
   | 'Team Leader'
   | 'Vendedor'

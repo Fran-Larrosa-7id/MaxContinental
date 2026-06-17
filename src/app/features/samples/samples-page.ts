@@ -65,7 +65,10 @@ export class SamplesPage {
     const activeClientId = this.visitContext.activeClientId();
     return this.ordersService.orders().filter((order) => {
       const matchesRole =
-        user.role === 'Coordinador' ? order.coordinatorId === user.id : order.sellerId === user.id;
+        user.role === 'Jefe' ||
+        (user.role === 'Coordinador'
+          ? order.coordinatorId === user.id
+          : order.sellerId === user.id);
       return matchesRole && (!activeClientId || order.clientId === activeClientId);
     });
   });
@@ -149,6 +152,9 @@ export class SamplesPage {
     const user = this.currentUser();
     if (user.role === 'Coordinador') {
       return row.item.status === 'Pedido' ? 'Marcar enviado' : null;
+    }
+    if (user.role === 'Jefe') {
+      return null;
     }
     if (row.order.sellerId !== user.id) {
       return null;
