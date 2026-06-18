@@ -57,7 +57,7 @@ export class SamplesPage {
   readonly tabs: { id: SampleTab; label: string; icon: string }[] = [
     { id: 'active', label: 'Muestras Activas', icon: 'science' },
     { id: 'resolved', label: 'Muestras Resueltas', icon: 'handshake' },
-    { id: 'approvals', label: 'Planillas de Aprobación', icon: 'verified' },
+    // { id: 'approvals', label: 'Planillas de Aprobación', icon: 'verified' },
   ];
 
   readonly roleOrders = computed(() => {

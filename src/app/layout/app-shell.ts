@@ -75,7 +75,7 @@ export class AppShell {
   });
   readonly pageTitle = computed(() => {
     const client = this.activeClient();
-    return client ? `Modo venta: ${client.name}` : this.titleForUrl(this.currentUrl());
+    return client ? `Cliente: ${client.name} - ${client.locality}` : this.titleForUrl(this.currentUrl());
   });
   readonly visitStep = computed(() => {
     const url = this.currentUrl();
@@ -96,11 +96,8 @@ export class AppShell {
   }
 
   finishVisit(): void {
-    const isClientRoute = this.router.url.startsWith('/cli/');
     this.visitContext.finish();
-    if (isClientRoute) {
-      this.router.navigateByUrl('/app/clientes');
-    }
+    this.router.navigateByUrl('/app/clientes');
   }
 
   logout(): void {
@@ -119,6 +116,6 @@ export class AppShell {
     if (url.includes('/tablero')) {
       return 'Tablero de Control';
     }
-    return 'Nueva Muestra';
+    return 'Seleccione el cliente para preparar una solicitud de muestra...';
   }
 }

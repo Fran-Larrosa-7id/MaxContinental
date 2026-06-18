@@ -11,7 +11,7 @@
       >
         <mat-icon>terrain</mat-icon>
       </span>
-      <span class="text-lg font-black">MAX CONTINENTAL</span>
+      <span class="text-lg font-black">Max Tracker</span>
     </a>
 
     <nav class="mt-4 flex-1">
@@ -39,14 +39,6 @@
           <small class="block text-[#a7d0ff]">{{ currentUser().role }}</small>
         </span>
       </div>
-      <div class="mb-3 rounded-md border border-white/15 bg-[#192f56]/70 px-3 py-2">
-        <span class="block text-[10px] font-black uppercase tracking-wide text-[#a7d0ff]">
-          Perfil activo
-        </span>
-        <span class="mt-0.5 block text-xs font-bold text-white">
-          {{ currentUser().roleCode }} - {{ currentUser().role }}
-        </span>
-      </div>
       <button
         type="button"
         class="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-[#e62629] px-3 text-sm font-bold text-white transition hover:bg-[#c91f23]"
@@ -69,10 +61,22 @@
       </a>
 
       <h1
-        class="min-w-0 flex-1 truncate px-3 text-sm font-black uppercase tracking-[0.1em] text-[#ffffff] sm:text-base md:px-0 md:text-xl md:tracking-[0.22em]"
+        class="min-w-0 flex-1 truncate px-3 text-sm font-black tracking-[0.1em] text-[#ffffff] sm:text-base md:px-0 md:text-xl md:tracking-[0.22em]" [class]="{ 'animate-pulse': !activeClient() }"
       >
         {{ pageTitle() }}
       </h1>
+
+      @if(activeClient(); as client) {
+            <button
+              type="button"
+              class="flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-white px-2.5 text-xs font-bold text-white transition hover:animate-pulse bg-red-800"
+              (click)="finishVisit()"
+            >
+              <mat-icon class="!text-[16px] pt-1">close</mat-icon>
+              Finalizar
+            </button>
+
+      }
 
       <div class="flex shrink-0 items-center gap-2">
         <button
@@ -101,43 +105,6 @@
         </a>
       }
     </nav>
-
-    @if (activeClient(); as client) {
-      <section
-        class="sticky top-[118px] z-10 border-b border-blue-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur md:top-[66px] md:px-7"
-      >
-        <div class="mx-auto flex max-w-[1320px] items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-[11px] font-black uppercase tracking-wide text-[#45658f]">
-              Modo venta - {{ visitStep() }}
-            </p>
-            <p class="truncate text-sm font-black text-[#082653]">
-              {{ client.name }}
-              <span class="hidden font-medium text-slate-500 sm:inline">
-                - {{ client.locality }}
-              </span>
-            </p>
-          </div>
-          <div class="flex shrink-0 items-center gap-2">
-            @if (cartCount() > 0) {
-              <span
-                class="hidden rounded-full bg-green-100 px-3 py-1 text-xs font-black text-green-800 sm:inline-flex"
-              >
-                {{ cartCount() }} unidades en preparacion
-              </span>
-            }
-            <button
-              type="button"
-              class="flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-red-200 px-2.5 text-xs font-bold text-red-600 transition hover:bg-red-50"
-              (click)="finishVisit()"
-            >
-              <mat-icon class="!text-[16px]">close</mat-icon>
-              Finalizar
-            </button>
-          </div>
-        </div>
-      </section>
-    }
 
     <router-outlet />
   </div>

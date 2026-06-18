@@ -1,4 +1,4 @@
-<main class="mx-auto w-full max-w-[1320px] px-4 py-7 sm:px-8" data-aos="fade-up">
+<main class="mx-auto w-full max-w-[1320px] px-4 py-7 sm:px-8" data-aos="zoom-in">
   <section class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <h2 class="text-2xl font-black">Catalogo de articulos</h2>
@@ -51,7 +51,40 @@
     </div>
   </section>
 
-  <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
+  <section class="mb-6 rounded-lg bg-white p-3 shadow-sm sm:p-4">
+    <div class="mb-4 grid grid-cols-3 gap-2">
+      @for (tab of articleTabs; track tab.id) {
+        <button
+          type="button"
+          class="flex min-h-[68px] cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-2 py-2 text-center transition sm:min-h-0 sm:flex-row sm:justify-start sm:gap-3 sm:px-3"
+          [class.border-[#45658f]]="selectedCategory() === tab.id"
+          [class.bg-[#eef5ff]]="selectedCategory() === tab.id"
+          [class.text-[#082653]]="selectedCategory() === tab.id"
+          [class.border-slate-200]="selectedCategory() !== tab.id"
+          [class.text-slate-500]="selectedCategory() !== tab.id"
+          (click)="selectedCategory.set(tab.id)"
+        >
+          <span
+            class="flex size-8 shrink-0 items-center justify-center rounded-md"
+            [class.bg-[#203f75]]="selectedCategory() === tab.id"
+            [class.text-white]="selectedCategory() === tab.id"
+            [class.bg-slate-100]="selectedCategory() !== tab.id"
+            [class.text-slate-500]="selectedCategory() !== tab.id"
+          >
+            <mat-icon class="!text-[18px]">{{ tab.icon }}</mat-icon>
+          </span>
+          <span class="min-w-0">
+            <strong class="block text-[11px] font-black leading-tight sm:text-sm">              
+              <span class="hidden sm:inline">{{ tab.label }}</span>
+            </strong>
+            <small class="mt-0.5 block text-[10px] font-bold text-slate-400">
+              {{ tabCounts()[tab.id] }} art.
+            </small>
+          </span>
+        </button>
+      }
+    </div>
+
     <label class="relative block">
       <mat-icon class="pointer-events-none absolute left-3 top-2.5 !text-[20px] text-slate-400">
         search
@@ -63,7 +96,7 @@
         (ngModelChange)="query.set($event)"
       />
     </label>
-  </div>
+  </section>
 
   <section class="overflow-hidden rounded-lg bg-white shadow-sm">
     <div
@@ -82,9 +115,28 @@
           <span class="block text-xs font-black uppercase tracking-wider text-slate-400 md:hidden">
             Nombre
           </span>
-          <strong class="block text-sm font-black uppercase text-[#082653]">
-            {{ article.name }}
-          </strong>
+          <div class="flex flex-wrap items-center gap-2">
+            <strong class="block text-sm font-black uppercase text-[#082653]">
+              {{ article.name }}
+            </strong>
+            <span
+              class="rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
+              [class.bg-blue-100]="article.abcCategory === 'flagship'"
+              [class.text-blue-800]="article.abcCategory === 'flagship'"
+              [class.bg-amber-100]="article.abcCategory === 'featured'"
+              [class.text-amber-800]="article.abcCategory === 'featured'"
+              [class.bg-slate-100]="article.abcCategory === 'common'"
+              [class.text-slate-600]="article.abcCategory === 'common'"
+            >
+              {{
+                article.abcCategory === 'flagship'
+                  ? 'Insignia'
+                  : article.abcCategory === 'featured'
+                    ? 'Destacado'
+                    : 'Comun'
+              }}
+            </span>
+          </div>
           <small class="mt-1 block font-bold uppercase text-slate-400">{{ article.brand }}</small>
         </div>
 

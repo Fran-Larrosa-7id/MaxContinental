@@ -40,10 +40,7 @@
       <section class="pt-4 sm:pt-6">
         <div class="mb-4 flex items-end justify-between gap-3 sm:mb-5">
           <div>
-            <h2 class="text-xl font-black sm:text-2xl">Muestras activas</h2>
-            <p class="mt-0.5 hidden text-sm text-slate-500 sm:block">
-              Seguimiento comercial de pedidos, entregas y feedback del cliente.
-            </p>
+            <h2 class="text-xl font-black sm:text-2xl">Seguimiento de pedidos, entregas y feedback del cliente.</h2>
           </div>
 
           <div class="inline-grid shrink-0 grid-cols-2 rounded-md bg-slate-100 p-1 shadow-sm">
@@ -134,7 +131,7 @@
                   <div>
                     <h3 class="text-sm font-black sm:text-base">{{ group.seller.name }}</h3>
                     <p class="text-xs text-slate-500">
-                      {{ group.orders.length }} pedidos asignados
+                      {{ group.orders.length }} {{ group.orders.length === 1 ? 'pedido' : 'pedidos' }} {{ group.orders.length > 1 ? 'asignados' : 'asignado' }}
                     </p>
                   </div>
                 </div>
@@ -189,7 +186,7 @@
                                   </p>
                                 }
                                 <p class="mt-1 text-[11px] font-medium text-slate-500 sm:hidden">
-                                  {{ dateSummary(item) }}
+                                  {{ dateSummary(item)}}
                                 </p>
                               </div>
                               <span
@@ -227,7 +224,7 @@
                                     [class.text-slate-400]="!statusReached(item, step)"
                                   >
                                     @if (statusReached(item, step)) {
-                                      <mat-icon class="!size-3.5 !text-sm">check</mat-icon>
+                                      <mat-icon class="!size-3.5 !text-sm pb-[1.1rem]">check</mat-icon>
                                     } @else {
                                       {{ index + 1 }}
                                     }
@@ -536,10 +533,7 @@
       <section class="pt-6">
         <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 class="text-2xl font-black">Muestras resueltas</h2>
-            <p class="mt-1 text-sm text-slate-500">
-              Cierres comerciales con la observacion registrada por el vendedor.
-            </p>
+            <h2 class="text-2xl font-black">Cierres comerciales con la observacion registrada por el vendedor</h2>
           </div>
           <div class="grid grid-cols-2 rounded-md bg-slate-100 p-1">
             <button
@@ -578,7 +572,7 @@
                   [class.bg-slate-900]="alert.tone === 'black'"
                   [class.text-white]="alert.tone === 'black'"
                 >
-                  <mat-icon class="!text-[15px]">
+                  <mat-icon class="!text-[15px] pt-1 pl-1">
                     {{ alert.tone === 'green' ? 'check_circle' : 'cancel' }}
                   </mat-icon>
                   {{ row.item.status }}

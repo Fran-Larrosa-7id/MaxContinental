@@ -10,6 +10,7 @@ export type SampleStatus =
   | 'Rechazada';
 
 export type StatusFilter = 'Todos los estados' | SampleStatus;
+export type SupplyAbcCategory = 'flagship' | 'featured' | 'common';
 
 export type UserRole =
   | 'Admin'
@@ -34,6 +35,7 @@ export type MockSupply = {
   name: string;
   brand: string;
   description: string;
+  abcCategory: SupplyAbcCategory;
 };
 
 export type MockUser = {
